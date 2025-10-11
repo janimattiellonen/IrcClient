@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
 import { io, Socket } from 'socket.io-client';
 
 interface MessageResponse {
@@ -7,7 +7,22 @@ interface MessageResponse {
   timestamp: string;
 }
 
-export const useSocket = () => {
+interface SocketContextType {
+  socket: Socket | null;
+  isConnected: boolean;
+  connect: () => void;
+  disconnect: () => void;
+  sendMessage: (message: string) => void;
+  responses: MessageResponse[];
+}
+
+const SocketContext = createContext<SocketContextType | undefined>(undefined);
+
+interface SocketProviderProps {
+  children: ReactNode;
+}
+
+export const SocketProvider = ({ children }: SocketProviderProps) => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [responses, setResponses] = useState<MessageResponse[]>([]);
@@ -52,11 +67,32 @@ export const useSocket = () => {
     }
   }, [socket, isConnected]);
 
-  const sendMessage = (message: string) => {
+  const sendMessage = useCallback((message: string) => {
     if (socket && isConnected) {
       socket.emit('send_message', { message });
     }
+  }, [socket, isConnected]);
+
+  const value: SocketContextType = {
+    socket,
+    isConnected,
+    connect,
+    disconnect,
+    sendMessage,
+    responses,
   };
 
-  return { socket, isConnected, connect, disconnect, sendMessage, responses };
+  return (
+    <SocketContext.Provider value={value}>
+      {children}
+    </SocketContext.Provider>
+  );
+};
+
+export const useSocketContext = () => {
+  const context = useContext(SocketContext);
+  if (context === undefined) {
+    throw new Error('useSocketContext must be used within a SocketProvider');
+  }
+  return context;
 };

@@ -1,9 +1,9 @@
 import { useState, FormEvent } from 'react';
-import { useSocket } from '../../hooks/useSocket';
+import { useSocketContext } from '../../contexts/SocketContext';
 
 export const SocketDemo = () => {
   const [message, setMessage] = useState('');
-  const { isConnected, sendMessage, responses } = useSocket();
+  const { isConnected, connect, disconnect, sendMessage, responses } = useSocketContext();
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -17,11 +17,42 @@ export const SocketDemo = () => {
     <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
       <h1>Socket.IO Demo</h1>
 
-      <div style={{ marginBottom: '20px' }}>
-        <strong>Status:</strong>{' '}
+      <div style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <strong>Status:</strong>
         <span style={{ color: isConnected ? 'green' : 'red' }}>
           {isConnected ? 'Connected' : 'Disconnected'}
         </span>
+        {!isConnected ? (
+          <button
+            onClick={connect}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: '#0066cc',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '14px'
+            }}
+          >
+            Connect
+          </button>
+        ) : (
+          <button
+            onClick={disconnect}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: '#cc0000',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '14px'
+            }}
+          >
+            Disconnect
+          </button>
+        )}
       </div>
 
       <form onSubmit={handleSubmit} style={{ marginBottom: '20px' }}>

@@ -1,0 +1,15 @@
+Architecture - client
+
+
+
+
+src
+    pages
+        - ConsolePage
+            - outputs all displayable generic server messages not bound to any channel or private message
+        - ChannelPage
+            - when active, shows communication for specific channel
+        - PrivateMessagePage
+            - shows messages between logged in user and another user
+        - LoginPage
+            - allows user to login to a specific irc server
