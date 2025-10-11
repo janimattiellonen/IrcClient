@@ -1,0 +1,2 @@
+For my IRC client, I need a easy to setup IRC server
+

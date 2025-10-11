@@ -1,0 +1,15 @@
+Architecture
+
+
+Client
+
+The client (Vite webapp) connects to the server (Fastify) using a socket.
+
+Communication between the client and the server is made using a REST API.
+
+
+Server
+
+The server (Fastify) connects to an irc server using a socket.
+
+The server acts as an intermediator between the client and the IRC server. The server translates client requests into IRC commands IRC server messages into a JSON response that the client understands.

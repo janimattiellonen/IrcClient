@@ -1,0 +1,11 @@
+services:
+  irc-server:
+    image: ghcr.io/ergochat/ergo:stable
+    container_name: ergo-irc-test
+    ports:
+      - "6667:6667"  # Plain text IRC
+      - "6697:6697"  # TLS IRC (if you configure certs)
+    volumes:
+      - ./irc-data:/ircd
+    restart: unless-stopped
+    # Using default config - will be generated on first run
