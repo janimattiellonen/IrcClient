@@ -1,1 +1,4 @@
 .idea
+
+# IRC server data - contains sensitive files
+irc-data/
