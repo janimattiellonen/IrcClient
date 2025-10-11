@@ -3,6 +3,7 @@ import { HomePage } from './pages/HomePage';
 import { ChannelPage } from './pages/ChannelPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { NotFoundPage } from './pages/NotFoundPage';
+import {LoginPage} from './pages/LoginPage.tsx';
 
 function App() {
   return (
@@ -13,6 +14,9 @@ function App() {
         backgroundColor: '#f5f5f5'
       }}>
         <Link to="/" style={{ marginRight: '20px' }}>Home</Link>
+        <Link to="/login" style={{ marginRight: '20px' }}>
+          Login
+        </Link>
         <Link to="/channel/general" style={{ marginRight: '20px' }}>
           #general
         </Link>
@@ -24,6 +28,8 @@ function App() {
 
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/login" element={<LoginPage />} />
+
         <Route path="/channel/:channel" element={<ChannelPage />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="*" element={<NotFoundPage />} />
