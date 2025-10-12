@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { useSocketContext } from '../../contexts/SocketContext';
+import { useSocketContext } from '../../hooks/useSocketContext';
 import { genericMessage } from '../../messages/messages.ts';
 
 export const SocketDemo = () => {

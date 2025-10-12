@@ -1,22 +1,13 @@
-import { createContext, useContext, useState, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
+import { IrcSessionContext, type IrcSessionContextType } from './IrcSessionContextDefinition';
 
-
-type IrcSessionContextType = {
-  nickname: string;
-  server: string;
-  setNickname: (nickname: string) => void;
-  setServer: (nickname: string) => void;
-}
-
-const IrcSessionContext = createContext<IrcSessionContextType | undefined>(undefined);
-
-type OIrcSessionProviderProps = {
+type IrcSessionProviderProps = {
   children: ReactNode;
 }
 
-export function IrcSessionProvide({ children }: OIrcSessionProviderProps) {
+export function IrcSessionProvider({ children }: IrcSessionProviderProps) {
   const [nickname, setNickname] = useState<string>('');
-  const [server, setServer] = useState<string >('');
+  const [server, setServer] = useState<string>('');
 
   const value: IrcSessionContextType = {
     nickname,
@@ -31,11 +22,3 @@ export function IrcSessionProvide({ children }: OIrcSessionProviderProps) {
     </IrcSessionContext.Provider>
   );
 }
-
-export const useIrcSessionContext = () => {
-  const context = useContext(IrcSessionContext);
-  if (context === undefined) {
-    throw new Error('useIrcSessionContext must be used within a IrcSessionProvider');
-  }
-  return context;
-};
