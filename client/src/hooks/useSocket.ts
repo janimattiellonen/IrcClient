@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 
 interface MessageResponse {
@@ -15,6 +15,7 @@ export const useSocket = () => {
   useEffect(() => {
     const socketInstance = io('http://localhost:3000', {
       transports: ['websocket'],
+      autoConnect: false,
     });
 
     socketInstance.on('connect', () => {
@@ -39,11 +40,23 @@ export const useSocket = () => {
     };
   }, []);
 
+  const connect = useCallback(() => {
+    if (socket && !isConnected) {
+      socket.connect();
+    }
+  }, [socket, isConnected]);
+
+  const disconnect = useCallback(() => {
+    if (socket && isConnected) {
+      socket.disconnect();
+    }
+  }, [socket, isConnected]);
+
   const sendMessage = (message: string) => {
     if (socket && isConnected) {
       socket.emit('send_message', { message });
     }
   };
 
-  return { socket, isConnected, sendMessage, responses };
+  return { socket, isConnected, connect, disconnect, sendMessage, responses };
 };

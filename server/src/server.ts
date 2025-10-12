@@ -1,6 +1,7 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import { Server as SocketIOServer } from 'socket.io';
+import { AppMessage } from '../../shared/messageTypes';
 
 const fastify = Fastify({
   logger: true
@@ -31,13 +32,13 @@ const start = async () => {
       console.log('Client connected:', socket.id);
 
       // Echo handler - receives message and sends back a response
-      socket.on('send_message', (data: { message: string }) => {
-        console.log('Received message:', data.message);
+        socket.on('send_message', (data: { message: AppMessage }) => {
+        console.log('Received message:', JSON.stringify(data.message.payload, null,2));
 
         // Echo back with a response
         socket.emit('message_response', {
           original: data.message,
-          response: `Server received: "${data.message}"`,
+          response: data.message,
           timestamp: new Date().toISOString()
         });
       });
