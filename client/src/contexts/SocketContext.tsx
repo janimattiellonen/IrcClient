@@ -1,24 +1,26 @@
-import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
-import { io, Socket } from 'socket.io-client';
+import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react';
 
-interface MessageResponse {
-  original: string;
-  response: string;
+import { io, Socket } from 'socket.io-client';
+import type { AppMessage } from '../../../shared/messageTypes.ts';
+
+type MessageResponse = {
+  original: AppMessage;
+  response: AppMessage;
   timestamp: string;
 }
 
-interface SocketContextType {
+type SocketContextType = {
   socket: Socket | null;
   isConnected: boolean;
   connect: () => void;
   disconnect: () => void;
-  sendMessage: (message: string) => void;
+  sendMessage: (message: AppMessage) => void;
   responses: MessageResponse[];
 }
 
 const SocketContext = createContext<SocketContextType | undefined>(undefined);
 
-interface SocketProviderProps {
+type  SocketProviderProps = {
   children: ReactNode;
 }
 
@@ -67,7 +69,7 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
     }
   }, [socket, isConnected]);
 
-  const sendMessage = useCallback((message: string) => {
+  const sendMessage = useCallback((message: AppMessage) => {
     if (socket && isConnected) {
       socket.emit('send_message', { message });
     }

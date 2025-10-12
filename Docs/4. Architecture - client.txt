@@ -13,3 +13,48 @@ src
             - shows messages between logged in user and another user
         - LoginPage
             - allows user to login to a specific irc server
+
+
+
+
+Contexts
+
+SocketContext
+ - provides functions for opening and closing a socket connection to the server
+ - maintains the open connection for the whole app
+
+IrcSessionContext
+
+
+
+Sending messages to server
+
+Message is always an object containing the message itself but also information of what type of message is been sent.
+
+It could be a:
+- command to join a channel
+- command to send a message to a channel
+- command to part a channel
+
+Sending of a message could be triggered by a textual command from the user ("/JOIN #foo) or by the user closing a private message window by pressing the (x) icon
+
+Whether the message is trigger by a textual command or a mouse down event, the message must be created containing proper content:
+
+Examples of messages:
+
+const message = {
+    type: JOIN_CHANNEL,
+    channelName: '#foo'
+}
+
+const message = {
+    type: END_PRIVATE_MESSAGE,
+    target: 'joshua'
+}
+
+const message = {
+    type: LEAVE_CHANNEL,
+    channelName: '#foo
+}
+
+The server should know what to do with the message obejct by looking at the message.type value.

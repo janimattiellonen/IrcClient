@@ -1,17 +1,19 @@
-import { useState, FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 import { useSocketContext } from '../../contexts/SocketContext';
+import { genericMessage } from '../../messages/messages.ts';
 
 export const SocketDemo = () => {
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState<string>('');
   const { isConnected, connect, disconnect, sendMessage, responses } = useSocketContext();
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
+
     if (message.trim()) {
-      sendMessage(message);
+      sendMessage(genericMessage(message || ''));
       setMessage('');
     }
-  };
+  }
 
   return (
     <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
@@ -105,9 +107,21 @@ export const SocketDemo = () => {
                   borderRadius: '4px'
                 }}
               >
-                <div><strong>You sent:</strong> {resp.original}</div>
+                <div><strong>You sent:</strong>
+                  {resp.original.type === 'GENERIC_MESSAGE' && (
+                    <div><strong>You sent:</strong> {resp.original.payload.message}</div>
+                  )}
+                </div>
                 <div style={{ color: '#0066cc' }}>
-                  <strong>Server response:</strong> {resp.response}
+                  {resp.original.type === 'GENERIC_MESSAGE' && (
+                    <div><strong>You sent:</strong> {resp.original.payload.message}</div>
+                  )}
+                  <strong>Server response is:</strong>
+
+                  {resp.response.type === 'GENERIC_MESSAGE' && (
+                    JSON.stringify(resp.response.payload.message, null,2)
+                  )}
+
                 </div>
                 <div style={{ fontSize: '12px', color: '#666' }}>
                   {new Date(resp.timestamp).toLocaleTimeString()}
@@ -120,3 +134,4 @@ export const SocketDemo = () => {
     </div>
   );
 };
+

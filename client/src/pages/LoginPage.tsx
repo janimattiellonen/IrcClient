@@ -1,5 +1,8 @@
 import { useForm } from 'react-hook-form';
+import { useRef, useEffect } from 'react';
 import { useSocketContext } from '../contexts/SocketContext';
+import {useIrcSessionContext} from '../contexts/IrcSessionContext.tsx';
+import { loginMessage } from '../messages/messages.ts';
 
 interface LoginFormData {
   nickname: string;
@@ -7,21 +10,63 @@ interface LoginFormData {
 }
 
 function LoginForm() {
-  const { connect } = useSocketContext();
+  const { connect, disconnect, isConnected, sendMessage } = useSocketContext();
+  const { nickname, server, setNickname, setServer } = useIrcSessionContext();
+  const pendingLoginRef = useRef(false);
+
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<LoginFormData>({
     defaultValues: {
-      serverAddress: 'localhost:3000',
+      nickname: nickname || '',
+      serverAddress: server || '',
     },
   });
 
+  // Watch for connection establishment after login attempt
+  useEffect(() => {
+    if (isConnected && pendingLoginRef.current) {
+      pendingLoginRef.current = false; // Reset flag immediately
+
+      // Make API call once connection is established
+      console.log('Connection established! Making login API request...');
+      console.log('Nickname:', nickname);
+      console.log('Server:', server);
+
+      const loginMsg = loginMessage(
+        nickname,
+        server
+      );
+
+      sendMessage(loginMsg);
+
+      // TODO: Make your actual API call here
+      // Example:
+      // fetch('/api/irc/login', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({ nickname, server })
+      // }).then(response => response.json())
+      //   .then(data => console.log('Login successful:', data))
+      //   .catch(error => console.error('Login failed:', error));
+    }
+  }, [isConnected, nickname, server]);
+
   const onSubmit = async (data: LoginFormData) => {
     console.log('Login form submitted:', data);
-    // TODO: Connect to IRC server with nickname
-    connect();
+
+    setNickname(data.nickname);
+    setServer(data.serverAddress);
+
+    if (!isConnected) {
+      pendingLoginRef.current = true; // Set flag before connecting
+      connect();
+    } else {
+      disconnect();
+    }
+
   };
 
   return (
@@ -113,7 +158,7 @@ function LoginForm() {
           cursor: isSubmitting ? 'not-allowed' : 'pointer',
         }}
       >
-        {isSubmitting ? 'Connecting...' : 'Connect'}
+        {isSubmitting ? 'Connecting...' : (isConnected ? 'Disconnect' : 'Connect')}
       </button>
     </form>
   );
