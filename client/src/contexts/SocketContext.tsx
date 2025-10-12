@@ -1,26 +1,9 @@
-import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react';
+import { useEffect, useState, useCallback, type ReactNode } from 'react';
+import { io, type Socket } from 'socket.io-client';
+import type { AppMessage } from '../../../shared/messageTypes';
+import { SocketContext, type MessageResponse, type SocketContextType } from './SocketContextDefinition';
 
-import { io, Socket } from 'socket.io-client';
-import type { AppMessage } from '../../../shared/messageTypes.ts';
-
-type MessageResponse = {
-  original: AppMessage;
-  response: AppMessage;
-  timestamp: string;
-}
-
-type SocketContextType = {
-  socket: Socket | null;
-  isConnected: boolean;
-  connect: () => void;
-  disconnect: () => void;
-  sendMessage: (message: AppMessage) => void;
-  responses: MessageResponse[];
-}
-
-const SocketContext = createContext<SocketContextType | undefined>(undefined);
-
-type  SocketProviderProps = {
+type SocketProviderProps = {
   children: ReactNode;
 }
 
@@ -89,12 +72,4 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
       {children}
     </SocketContext.Provider>
   );
-};
-
-export const useSocketContext = () => {
-  const context = useContext(SocketContext);
-  if (context === undefined) {
-    throw new Error('useSocketContext must be used within a SocketProvider');
-  }
-  return context;
 };

@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { useRef, useEffect } from 'react';
-import { useSocketContext } from '../contexts/SocketContext';
-import {useIrcSessionContext} from '../contexts/IrcSessionContext.tsx';
+import { useSocketContext } from '../hooks/useSocketContext';
+import { useIrcSessionContext } from '../hooks/useIrcSessionContext';
 import { loginMessage } from '../messages/messages.ts';
 
 interface LoginFormData {
@@ -52,7 +52,7 @@ function LoginForm() {
       //   .then(data => console.log('Login successful:', data))
       //   .catch(error => console.error('Login failed:', error));
     }
-  }, [isConnected, nickname, server]);
+  }, [isConnected, nickname, server, sendMessage]);
 
   const onSubmit = async (data: LoginFormData) => {
     console.log('Login form submitted:', data);

@@ -6,12 +6,12 @@ import tseslint from 'typescript-eslint'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist']),
+  globalIgnores(['dist', 'node_modules']),
   {
-    files: ['**/*.{ts,tsx}'],
+    files: ['**/*.{ts,tsx}', '../shared/**/*.ts'],
     extends: [
       js.configs.recommended,
-      tseslint.configs.recommended,
+      ...tseslint.configs.recommended,
       reactHooks.configs['recommended-latest'],
       reactRefresh.configs.vite,
     ],
