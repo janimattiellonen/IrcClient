@@ -1,0 +1,16 @@
+:ergo.test 001 jme :Welcome to the ErgoTest IRC Network jme
+:ergo.test 002 jme :Your host is ergo.test, running version ergo-2.16.0-e200e9fd8f13cf46
+:ergo.test 003 jme :This server was created Wed, 15 Oct 2025 13:44:34 UTC
+:ergo.test 004 jme ergo.test ergo-2.16.0-e200e9fd8f13cf46 BERTZios CEIMRUabefhiklmnoqstuv Iabefhkloqv
+:ergo.test 005 jme AWAYLEN=390 BOT=B CASEMAPPING=ascii CHANLIMIT=#:100 CHANMODES=Ibe,k,fl,CEMRUimnstu CHANNELLEN=64 CHANTYPES=# CHATHISTORY=1000 ELIST=U EXCEPTS EXTBAN=,m FORWARD=f INVEX :are supported by this server
+:ergo.test 005 jme KICKLEN=390 MAXLIST=beI:100 MAXTARGETS=4 MODES MONITOR=100 MSGREFTYPES=msgid,timestamp NETWORK=ErgoTest NICKLEN=32 PREFIX=(qaohv)~&@%+ SAFELIST SAFERATE STATUSMSG=~&@%+ TARGMAX=NAMES:1,LIST:1,KICK:,WHOIS:1,USERHOST:10,PRIVMSG:4,TAGMSG:4,NOTICE:4,MONITOR:100 :are supported by this server
+:ergo.test 005 jme TOPICLEN=390 UTF8ONLY WHOX draft/CHATHISTORY=1000 :are supported by this server
+:ergo.test 251 jme :There are 0 users and 2 invisible on 1 server(s)
+:ergo.test 252 jme 0 :IRC Operators online
+:ergo.test 253 jme 0 :unregistered connections
+:ergo.test 254 jme 1 :channels formed
+:ergo.test 255 jme :I have 2 clients and 0 servers
+:ergo.test 265 jme 2 2 :Current local users 2, max 2
+:ergo.test 266 jme 2 2 :Current global users 2, max 2
+:ergo.test 422 jme :MOTD File is missing
+:ergo.test 221 jme +i

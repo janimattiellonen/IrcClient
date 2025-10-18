@@ -57,4 +57,4 @@ const message = {
     channelName: '#foo
 }
 
-The server should know what to do with the message obejct by looking at the message.type value.
+The server should know what to do with the message obejct by looking at the message.type value. Each sent message object can contain arbitrary data while containing certain expected properties, such as type and others. 

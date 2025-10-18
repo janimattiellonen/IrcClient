@@ -1,2 +1,5 @@
-For my IRC client, I need a easy to setup IRC server
+For my IRC client, I need an easy to setup IRC server which allows me to test connections without risking k-line.
 
+I'd like to have it running inside a Docker container.
+
+WHat do you suggest?

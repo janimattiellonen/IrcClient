@@ -11,11 +11,12 @@ import {
 
 export function loginMessage(
   nickname: string,
-  server: string
+  server: string,
+  port: number
 ): Message<typeof MESSAGE_LOGIN, LoginPayload> {
   return {
     type: MESSAGE_LOGIN,
-    payload: { nickname, server }
+    payload: { nickname, server, port }
   }
 }
 

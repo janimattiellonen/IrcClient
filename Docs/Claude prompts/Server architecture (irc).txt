@@ -1,0 +1,487 @@
+I'm implementing my irc related code on the server side.
+
+Current client <-> server process concept:
+1) user visits the login page on http://localhost:5173/login and enters irc server, port and nickname
+2) server address, port and nickname is sent to server via a web socket
+3) the server creates an irc connection using given values
+
+In file server/src/server.ts and on line 36 I listen for incoming messages from the webapp client. If the incoming message is of type MESSAGE_LOGIN,
+I create a new TCP Socket, using server and port received via the message. I also make the IRC specific NICK and USER requests to the TCP socket.
+
+This is kind of what I have done by now and where I am at the moment.
+
+The current implementation is not optimal as I have problems keeping the very irc transport layer specific code cleanly separated from other parts.
+
+Inspect my code and suggest improvements on separation of concerns
+
+⏺ Let me inspect your current implementation to provide specific suggestions for better separation of concerns.
+
+⏺ Read(server/src/server.ts)
+  ⎿  Read 84 lines
+
+⏺ Read(server/src/irc/messageHandler.ts)
+  ⎿  Read 30 lines
+
+⏺ Bash(find /Users/janimattiellonen/Documents/Development/IrcClient/server/src/irc -name "*.ts" -type f)
+  ⎿  /Users/janimattiellonen/Documents/Development/IrcClient/server/src/irc/messageHandler.ts
+     /Users/janimattiellonen/Documents/Development/IrcClient/server/src/irc/client.ts
+
+⏺ Read(server/src/irc/client.ts)
+  ⎿  Read 13 lines
+
+⏺ Bash(find /Users/janimattiellonen/Documents/Development/IrcClient/shared -name "*.ts" -type f 2>/dev/null | head -5)
+  ⎿  /Users/janimattiellonen/Documents/Development/IrcClient/shared/messageTypes.ts
+     /Users/janimattiellonen/Documents/Development/IrcClient/shared/commandTypes.ts
+
+⏺ Now I can see the issues. Here's my analysis and suggested improvements:
+
+  Current Problems
+
+  1. messageHandler.ts mixes concerns:
+    - Message routing (application logic)
+    - IRC protocol commands (NICK, USER)
+    - TCP socket event handling
+  2. client.ts is too thin - just wraps net.createConnection
+  3. No IRC protocol abstraction - raw protocol commands scattered in handler
+  4. No connection lifecycle management - where is the socket stored? How to send messages later?
+
+  Suggested Architecture
+
+  Following your CLAUDE.md principle of keeping handlers "dumb" and separating concerns:
+
+  server/src/irc/
+  ├── transport/
+  │   └── tcpClient.ts           # Low-level TCP transport
+  ├── protocol/
+  │   ├── ircConnection.ts       # IRC protocol commands & parsing
+  │   └── ircProtocol.ts         # IRC message formatting utilities
+  ├── ircConnectionManager.ts    # Manages connection lifecycle & state
+  └── messageHandler.ts          # Application message routing (stays clean)
+
+  Separation of Concerns
+
+  Layer 1: Transport (tcpClient.ts)
+  - Raw TCP socket creation
+  - Connection/disconnection
+  - Data events
+  - NO IRC protocol knowledge
+
+  Layer 2: Protocol (ircConnection.ts, ircProtocol.ts)
+  - IRC command formatting (NICK, USER, JOIN, PRIVMSG)
+  - IRC message parsing
+  - Protocol-specific logic
+  - NO business logic
+
+  Layer 3: Connection Management (ircConnectionManager.ts)
+  - Connection lifecycle (create, store, retrieve, destroy)
+  - Map web clients to IRC connections
+  - Connection state management
+
+  Layer 4: Application (messageHandler.ts)
+  - Route incoming messages to appropriate handlers
+  - Delegate to connection manager
+  - Stay "dumb" - no protocol details
+
+  Would you like me to implement this refactored architecture? I can create these files with proper separation of concerns.
+
+> DOn't implement yet but show me some actual coe that follows these layers. Do use my existing code as a base
+
+⏺ Here's how your existing code would look refactored into proper layers:
+
+  Layer 1: Transport (transport/tcpClient.ts)
+
+  import * as net from 'net';
+
+  type TcpConnectionParams = {
+    host: string;
+    port: number;
+  };
+
+  type TcpClientEvents = {
+    onConnect: () => void;
+    onData: (data: Buffer) => void;
+    onError: (error: Error) => void;
+    onClose: () => void;
+  };
+
+  export class TcpClient {
+    private socket: net.Socket | null = null;
+
+    connect(params: TcpConnectionParams, events: TcpClientEvents): void {
+      this.socket = net.createConnection({
+        host: params.host,
+        port: params.port
+      });
+
+      this.socket.on('connect', events.onConnect);
+      this.socket.on('data', events.onData);
+      this.socket.on('error', events.onError);
+      this.socket.on('close', events.onClose);
+    }
+
+    send(data: string): void {
+      if (!this.socket) {
+        throw new Error('Socket not connected');
+      }
+      this.socket.write(data);
+    }
+
+    disconnect(): void {
+      this.socket?.end();
+      this.socket = null;
+    }
+
+    isConnected(): boolean {
+      return this.socket !== null && !this.socket.destroyed;
+    }
+  }
+
+  Layer 2: Protocol (protocol/ircProtocol.ts)
+
+  // IRC message formatting utilities
+  export const IrcProtocol = {
+    // Format IRC commands (NO socket interaction here)
+    formatNick: (nickname: string): string => {
+      return `NICK ${nickname}\r\n`;
+    },
+
+    formatUser: (username: string, realname: string): string => {
+      return `USER ${username} 0 * :${realname}\r\n`;
+    },
+
+    formatJoin: (channel: string): string => {
+      return `JOIN ${channel}\r\n`;
+    },
+
+    formatPrivMsg: (target: string, message: string): string => {
+      return `PRIVMSG ${target} :${message}\r\n`;
+    },
+
+    formatPong: (server: string): string => {
+      return `PONG :${server}\r\n`;
+    },
+
+    // Parse incoming IRC messages
+    parseMessage: (raw: string) => {
+      // Basic IRC message parsing
+      // Returns structured data like { prefix, command, params }
+      const match = raw.match(/^(?::(\S+) )?(\S+)(?: (.+))?$/);
+      if (!match) return null;
+
+      return {
+        prefix: match[1] || null,
+        command: match[2],
+        params: match[3] ? match[3].split(' ') : []
+      };
+    }
+  };
+
+  Layer 2: Protocol (protocol/ircConnection.ts)
+
+  import { TcpClient } from '../transport/tcpClient';
+  import { IrcProtocol } from './ircProtocol';
+
+  type IrcConnectionConfig = {
+    host: string;
+    port: number;
+    nickname: string;
+    username?: string;
+    realname?: string;
+  };
+
+  type IrcConnectionEvents = {
+    onRegistered: () => void;
+    onMessage: (data: any) => void;
+    onError: (error: Error) => void;
+    onDisconnect: () => void;
+  };
+
+  export class IrcConnection {
+    private tcpClient: TcpClient;
+    private config: IrcConnectionConfig;
+    private registered = false;
+
+    constructor(config: IrcConnectionConfig) {
+      this.config = config;
+      this.tcpClient = new TcpClient();
+    }
+
+    connect(events: IrcConnectionEvents): void {
+      this.tcpClient.connect(
+        { host: this.config.host, port: this.config.port },
+        {
+          onConnect: () => {
+            // Send IRC registration commands
+            this.sendNick(this.config.nickname);
+            this.sendUser(
+              this.config.username || this.config.nickname,
+              this.config.realname || 'IRC User'
+            );
+          },
+          onData: (buffer: Buffer) => {
+            const lines = buffer.toString().split('\r\n');
+            for (const line of lines) {
+              if (!line) continue;
+              this.handleIrcMessage(line, events);
+            }
+          },
+          onError: events.onError,
+          onClose: events.onDisconnect
+        }
+      );
+    }
+
+    private handleIrcMessage(raw: string, events: IrcConnectionEvents): void {
+      const parsed = IrcProtocol.parseMessage(raw);
+      if (!parsed) return;
+
+      // Handle PING automatically
+      if (parsed.command === 'PING') {
+        const server = parsed.params[0] || '';
+        this.tcpClient.send(IrcProtocol.formatPong(server));
+        return;
+      }
+
+      // Check for successful registration (RPL_WELCOME = 001)
+      if (parsed.command === '001' && !this.registered) {
+        this.registered = true;
+        events.onRegistered();
+      }
+
+      // Forward all messages to application layer
+      events.onMessage({ raw, parsed });
+    }
+
+    // IRC command methods (use protocol formatting)
+    sendNick(nickname: string): void {
+      this.tcpClient.send(IrcProtocol.formatNick(nickname));
+    }
+
+    sendUser(username: string, realname: string): void {
+      this.tcpClient.send(IrcProtocol.formatUser(username, realname));
+    }
+
+    joinChannel(channel: string): void {
+      if (!this.registered) {
+        throw new Error('Cannot join channel before registration complete');
+      }
+      this.tcpClient.send(IrcProtocol.formatJoin(channel));
+    }
+
+    sendMessage(target: string, message: string): void {
+      if (!this.registered) {
+        throw new Error('Cannot send message before registration complete');
+      }
+      this.tcpClient.send(IrcProtocol.formatPrivMsg(target, message));
+    }
+
+    disconnect(): void {
+      this.tcpClient.disconnect();
+      this.registered = false;
+    }
+
+    isConnected(): boolean {
+      return this.tcpClient.isConnected();
+    }
+  }
+
+  Layer 3: Connection Management (ircConnectionManager.ts)
+
+  import { IrcConnection } from './protocol/ircConnection';
+
+  type ConnectionInfo = {
+    connection: IrcConnection;
+    nickname: string;
+    server: string;
+    registered: boolean;
+  };
+
+  export class IrcConnectionManager {
+    // Map Socket.IO client ID to IRC connection
+    private connections = new Map<string, ConnectionInfo>();
+
+    createConnection(
+      clientId: string,
+      config: { host: string; port: number; nickname: string }
+    ): void {
+      // Check if connection already exists
+      if (this.connections.has(clientId)) {
+        throw new Error(`Connection already exists for client ${clientId}`);
+      }
+
+      const ircConnection = new IrcConnection({
+        host: config.host,
+        port: config.port,
+        nickname: config.nickname
+      });
+
+      const connectionInfo: ConnectionInfo = {
+        connection: ircConnection,
+        nickname: config.nickname,
+        server: config.host,
+        registered: false
+      };
+
+      this.connections.set(clientId, connectionInfo);
+
+      // Connect with event handlers
+      ircConnection.connect({
+        onRegistered: () => {
+          connectionInfo.registered = true;
+          console.log(`IRC registration complete for ${clientId}`);
+          // TODO: Notify web client via Socket.IO
+        },
+        onMessage: (data) => {
+          console.log(`IRC message for ${clientId}:`, data.raw);
+          // TODO: Forward to web client via Socket.IO
+        },
+        onError: (error) => {
+          console.error(`IRC error for ${clientId}:`, error);
+          // TODO: Notify web client via Socket.IO
+        },
+        onDisconnect: () => {
+          console.log(`IRC disconnected for ${clientId}`);
+          this.connections.delete(clientId);
+          // TODO: Notify web client via Socket.IO
+        }
+      });
+    }
+
+    getConnection(clientId: string): IrcConnection | null {
+      return this.connections.get(clientId)?.connection || null;
+    }
+
+    disconnectClient(clientId: string): void {
+      const info = this.connections.get(clientId);
+      if (info) {
+        info.connection.disconnect();
+        this.connections.delete(clientId);
+      }
+    }
+
+    disconnectAll(): void {
+      for (const [clientId] of this.connections) {
+        this.disconnectClient(clientId);
+      }
+    }
+  }
+
+  Layer 4: Application (messageHandler.ts)
+
+  import { AppMessage, MESSAGE_JOIN_CHANNEL, MESSAGE_LOGIN } from 'shared/messageTypes';
+  import { IrcConnectionManager } from './ircConnectionManager';
+
+  // This would be passed from server.ts
+  let connectionManager: IrcConnectionManager;
+
+  export function initializeMessageHandler(manager: IrcConnectionManager): void {
+    connectionManager = manager;
+  }
+
+  export function handleClientMessage(
+    message: AppMessage,
+    clientId: string
+  ): void {
+    // Clean routing - no protocol details here
+    if (message.type === MESSAGE_LOGIN) {
+      handleLogin(message.payload, clientId);
+    } else if (message.type === MESSAGE_JOIN_CHANNEL) {
+      handleJoinChannel(message.payload, clientId);
+    }
+  }
+
+  function handleLogin(
+    payload: { server: string; port: number; nickname: string },
+    clientId: string
+  ): void {
+    // Delegate to connection manager - no IRC protocol here
+    connectionManager.createConnection(clientId, {
+      host: payload.server,
+      port: payload.port,
+      nickname: payload.nickname
+    });
+  }
+
+  function handleJoinChannel(
+    payload: { channel: string },
+    clientId: string
+  ): void {
+    const connection = connectionManager.getConnection(clientId);
+    if (!connection) {
+      throw new Error('No IRC connection found for client');
+    }
+
+    // Delegate to IRC connection - no protocol formatting here
+    connection.joinChannel(payload.channel);
+  }
+
+  Updated server.ts
+
+  import Fastify from 'fastify';
+  import cors from '@fastify/cors';
+  import { Server as SocketIOServer } from 'socket.io';
+  import { AppMessage } from '../../shared/messageTypes';
+  import { handleClientMessage, initializeMessageHandler } from './irc/messageHandler';
+  import { IrcConnectionManager } from './irc/ircConnectionManager';
+
+  const fastify = Fastify({ logger: true });
+
+  await fastify.register(cors, {
+    origin: ['http://localhost:5173', 'http://localhost:5174'],
+    credentials: true
+  });
+
+  const start = async () => {
+    try {
+      await fastify.listen({ port: 3000, host: '0.0.0.0' });
+      console.log('Server listening on http://localhost:3000');
+
+      const io = new SocketIOServer(fastify.server, {
+        cors: {
+          origin: ['http://localhost:5173', 'http://localhost:5174'],
+          credentials: true
+        }
+      });
+
+      // Initialize connection manager
+      const connectionManager = new IrcConnectionManager();
+      initializeMessageHandler(connectionManager);
+
+      io.on('connection', (socket) => {
+        console.log('Client connected:', socket.id);
+
+        socket.on('send_message', (data: { message: AppMessage }) => {
+          // Clean delegation - no business logic here
+          handleClientMessage(data.message, socket.id);
+        });
+
+        socket.on('disconnect', () => {
+          console.log('Client disconnected:', socket.id);
+          // Clean up IRC connection
+          connectionManager.disconnectClient(socket.id);
+        });
+      });
+
+    } catch (err) {
+      fastify.log.error(err);
+      process.exit(1);
+    }
+  };
+
+  start();
+
+  ---
+  Key Benefits
+
+  Current code: Your messageHandler.ts lines 13-27
+  const ircSocket = connect({ host, port });
+  ircSocket.on('connect', () => {
+    ircSocket.write(`NICK ${nickname}\r\n`);  // Protocol details leaked!
+    ircSocket.write('USER myuser 0 * :Real Name\r\n');
+  });
+
+  Refactored: messageHandler.ts lines 27-33
+  connectionManager.createConnection(clientId, { host, port, nickname });
+  // No protocol details! Clean delegation.
+
+  Each layer has a single responsibility and doesn't know about layers below it.

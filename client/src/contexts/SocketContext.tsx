@@ -13,7 +13,7 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
   const [responses, setResponses] = useState<MessageResponse[]>([]);
 
   useEffect(() => {
-    const socketInstance = io('http://localhost:3000', {
+    const socketInstance = io('http://localhost:3001', {
       transports: ['websocket'],
       autoConnect: false,
     });

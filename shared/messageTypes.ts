@@ -10,6 +10,7 @@ export const MESSAGE_GENERIC_MESSAGE = 'GENERIC_MESSAGE';
 export type LoginPayload = {
   nickname: string;
   server: string;
+  port: number;
 }
 
 export type JoinChannelPayload = {

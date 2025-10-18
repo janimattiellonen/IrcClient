@@ -7,11 +7,12 @@ import { loginMessage } from '../messages/messages.ts';
 interface LoginFormData {
   nickname: string;
   serverAddress: string;
+  port: string;
 }
 
 function LoginForm() {
   const { connect, disconnect, isConnected, sendMessage } = useSocketContext();
-  const { nickname, server, setNickname, setServer } = useIrcSessionContext();
+  const { nickname, server, setNickname, setServer, port, setPort } = useIrcSessionContext();
   const pendingLoginRef = useRef(false);
 
   const {
@@ -20,8 +21,9 @@ function LoginForm() {
     formState: { errors, isSubmitting },
   } = useForm<LoginFormData>({
     defaultValues: {
-      nickname: nickname || '',
-      serverAddress: server || '',
+      nickname: nickname || 'jme',
+      serverAddress: server || 'localhost',
+      port: port ? String(port) : '6667'
     },
   });
 
@@ -34,10 +36,12 @@ function LoginForm() {
       console.log('Connection established! Making login API request...');
       console.log('Nickname:', nickname);
       console.log('Server:', server);
+      console.log('Port:', port);
 
       const loginMsg = loginMessage(
         nickname,
-        server
+        server,
+        port
       );
 
       sendMessage(loginMsg);
@@ -59,6 +63,7 @@ function LoginForm() {
 
     setNickname(data.nickname);
     setServer(data.serverAddress);
+    setPort(parseInt(data.port, 10));
 
     if (!isConnected) {
       pendingLoginRef.current = true; // Set flag before connecting
@@ -134,11 +139,36 @@ function LoginForm() {
             borderRadius: '4px',
             boxSizing: 'border-box',
           }}
-          placeholder="localhost:3000"
+          placeholder="localhost"
         />
-        {errors.serverAddress && (
+      </div>
+      <div style={{ marginBottom: '20px' }}>
+        <label
+          htmlFor="port"
+          style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}
+        >
+          Port
+        </label>
+        <input
+          id="port"
+          type="number"
+          {...register('port', {
+            required: 'Port is required',
+          })}
+          style={{
+            width: '100%',
+            padding: '10px',
+            fontSize: '16px',
+            border: errors.port ? '2px solid #cc0000' : '1px solid #ccc',
+            borderRadius: '4px',
+            boxSizing: 'border-box',
+          }}
+          placeholder="6667"
+        />
+
+        {errors.port && (
           <span style={{ color: '#cc0000', fontSize: '14px', marginTop: '4px', display: 'block' }}>
-            {errors.serverAddress.message}
+            {errors.port.message}
           </span>
         )}
       </div>

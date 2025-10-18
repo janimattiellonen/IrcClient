@@ -1,7 +1,9 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import { Server as SocketIOServer } from 'socket.io';
-import { AppMessage } from '../../shared/messageTypes';
+import { AppMessage, MESSAGE_JOIN_CHANNEL, MESSAGE_LOGIN } from '../../shared/messageTypes';
+import { handleClientMessage, initializeMessageHandler } from './irc/messageHandler';
+import { IrcConnectionManager } from './irc/IrcConnectionManager';
 
 const fastify = Fastify({
   logger: true
@@ -16,8 +18,8 @@ await fastify.register(cors, {
 // Start Fastify server
 const start = async () => {
   try {
-    await fastify.listen({ port: 3000, host: '0.0.0.0' });
-    console.log('Server listening on http://localhost:3000');
+    await fastify.listen({ port: 3001, host: '0.0.0.0' });
+    console.log('Server listening on http://localhost:3001');
 
     // Attach Socket.IO to the Fastify server
     const io = new SocketIOServer(fastify.server, {
@@ -27,13 +29,46 @@ const start = async () => {
       }
     });
 
+
+    //let currentSocket = null;
+    const connectionManager = new IrcConnectionManager();
+    initializeMessageHandler(connectionManager);
+
     // Socket.IO connection handler
     io.on('connection', (socket) => {
       console.log('Client connected:', socket.id);
+      //currentSocket = socket;
+      //connectionManager.setSocket(socket);
 
       // Echo handler - receives message and sends back a response
         socket.on('send_message', (data: { message: AppMessage }) => {
-        console.log('Received message:', JSON.stringify(data.message.payload, null,2));
+
+
+          handleClientMessage(data.message, socket)
+  /*
+          // THis code was moved inside handleClientMessage
+          if (data.message.type === MESSAGE_LOGIN) {
+            const ircSocket = client.connect(data.message.payload.server, data.message.payload.port);
+            const nickname = data.message.payload.nickname;
+
+            ircSocket.on('connect', () => {
+              ircSocket.write(`NICK ${nickname}\r\n`);
+              ircSocket.write('USER myuser 0 * :Real Name\r\n');
+            });
+
+            ircSocket.on('data', (data) => {
+              // Parse IRC protocol messages
+            });
+          }
+*/
+
+          console.log('Received message:', JSON.stringify(data.message, null,2));
+
+        // parse incoming message
+        // find suitable handler
+        // process request
+        // respond to client
+
 
         // Echo back with a response
         socket.emit('message_response', {

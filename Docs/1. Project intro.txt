@@ -6,6 +6,6 @@ I want to create a React powered IRC webapp.
 
 What framework/tool do you suggest I use?
 
-What's the best strategy connection-wise that I could sue to maintain a connec
+What's the best strategy connection-wise that I could sue to maintain a connection to the server?
 
 
