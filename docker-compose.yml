@@ -3,8 +3,8 @@ services:
     image: ghcr.io/ergochat/ergo:stable
     container_name: ergo-irc-test
     ports:
-      - "6667:6667"  # Plain text IRC
-      - "6697:6697"  # TLS IRC (if you configure certs)
+      - "127.0.0.1:6667:6667"  # Plain text IRC - localhost only
+      - "127.0.0.1:6697:6697"  # TLS IRC - localhost only
     volumes:
       - ./irc-data:/ircd
     restart: unless-stopped
