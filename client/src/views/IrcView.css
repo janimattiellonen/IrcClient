@@ -1,44 +1,42 @@
 .irc-view {
-    display: flex;
-    border: solid red 1px;
-    flex-grow: 1;
-    overflow: hidden;
-    min-height: 0;
+  display: flex;
+  border: solid red 1px;
+  flex-grow: 1;
+  overflow: hidden;
+  min-height: 0;
 }
 
 .irc-view-channel-bar {
-    flex-basis: 15%;
-    flex-shrink: 0;
-    background: gray;
-    overflow-y: auto;
-    overflow-x: hidden;
+  flex-basis: 15%;
+  flex-shrink: 0;
+  background: gray;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .irc-view-content {
-    display: flex;
-    flex-direction: column;
-    flex-basis: 85%;
-    flex-grow: 1;
-    background: blue;
-    overflow: hidden;
-    min-height: 0;
+  display: flex;
+  flex-direction: column;
+  flex-basis: 85%;
+  flex-grow: 1;
+  background: blue;
+  overflow: hidden;
+  min-height: 0;
 }
 
 .irc-view-output {
-    flex-grow: 1;
-    background: red;
-    overflow-y: auto;
-    overflow-x: hidden;
-    padding: 8px;
-    min-height: 0;
+  flex-grow: 1;
+  background: red;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 8px;
+  min-height: 0;
 }
 
 .irc-view-input {
-    flex-shrink: 0;
-    height: 60px; /* Fixed height for input */
-    background: green;
-    display: flex;
-    justify-content: stretch;
-
+  flex-shrink: 0;
+  height: 60px; /* Fixed height for input */
+  background: green;
+  display: flex;
+  justify-content: stretch;
 }
-

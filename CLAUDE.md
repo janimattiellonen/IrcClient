@@ -2,7 +2,6 @@
 
 -when commiting changes, add changed files explicitly
 
-
 - prefer types to interfaces
 - use native Javascript functions when possible
 - use Date.toLocaleDateString() instead of a custom made date formatting function

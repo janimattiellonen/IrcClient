@@ -6,11 +6,10 @@ type ConnectionParams = {
   port: number;
   nickname: string;
   socket: Socket;
-}
+};
 
 export function connect(params: ConnectionParams): net.Socket {
   const tcpSocket = net.createConnection({ host: params.host, port: params.port });
-
 
   const nickname = params.nickname;
 
@@ -25,5 +24,4 @@ export function connect(params: ConnectionParams): net.Socket {
   });
 
   return tcpSocket;
-
 }

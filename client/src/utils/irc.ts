@@ -31,8 +31,6 @@ function parsePrivMsg(input: string): IrcCommand | InvalidCommand {
   const recipient = 'doo';
   const message = 'foo';
 
-
-
   return privMsgCommand(recipient, message, input);
 }
 

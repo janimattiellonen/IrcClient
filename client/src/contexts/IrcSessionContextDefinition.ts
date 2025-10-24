@@ -7,6 +7,6 @@ export type IrcSessionContextType = {
   setNickname: (nickname: string) => void;
   setServer: (nickname: string) => void;
   setPort: (port: number) => void;
-}
+};
 
 export const IrcSessionContext = createContext<IrcSessionContextType | undefined>(undefined);

@@ -25,6 +25,7 @@ docker-compose down
 ## Test-Friendly Features
 
 This configuration has:
+
 - ✅ **No rate limiting** - spam away for testing
 - ✅ **No connection throttling** - reconnect as fast as you want
 - ✅ **No email verification** - register accounts instantly
@@ -46,6 +47,7 @@ This configuration has:
 ## Operator Access (for advanced testing)
 
 If you need operator privileges for testing:
+
 ```irc
 /OPER testoper test123
 ```
@@ -53,6 +55,7 @@ If you need operator privileges for testing:
 ## Resetting the Server
 
 To start with a completely fresh state:
+
 ```bash
 docker-compose down -v
 rm -rf irc-data/ircd.db
@@ -62,12 +65,14 @@ docker-compose up -d
 ## Customizing Configuration
 
 Edit `irc-data/ircd.yaml` to customize:
+
 - Server name and MOTD
-- Channel modes and limits
+- ChannelButton modes and limits
 - Enable/disable features
 - Add more operator accounts
 
 After changing config, restart the server:
+
 ```bash
 docker-compose restart
 ```
@@ -75,6 +80,7 @@ docker-compose restart
 ## Common Test Scenarios
 
 ### Testing Reconnection Logic
+
 ```bash
 # Kill the server suddenly
 docker-compose kill
@@ -84,9 +90,11 @@ docker-compose up -d
 ```
 
 ### Testing Multiple Clients
+
 Connect multiple instances of your client - no connection limits!
 
-### Testing Channel Operations
+### Testing ChannelButton Operations
+
 - Create channels (no registration required)
 - Test ops, voice, bans, etc.
 - Test topic changes and modes
@@ -94,6 +102,7 @@ Connect multiple instances of your client - no connection limits!
 ## Troubleshooting
 
 **Can't connect?**
+
 ```bash
 # Check if server is running
 docker-compose ps
@@ -103,6 +112,7 @@ docker-compose logs
 ```
 
 **Config errors?**
+
 ```bash
 # Validate configuration
 docker-compose config
@@ -110,7 +120,8 @@ docker-compose config
 
 **Port already in use?**
 Change the port mapping in `docker-compose.yml`:
+
 ```yaml
 ports:
-  - "6668:6667"  # Use port 6668 instead
+  - '6668:6667' # Use port 6668 instead
 ```

@@ -3,20 +3,26 @@ import { IrcPage } from './pages/IrcPage.tsx';
 import { ChannelPage } from './pages/ChannelPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { NotFoundPage } from './pages/NotFoundPage';
-import {LoginPage} from './pages/LoginPage.tsx';
+import { LoginPage } from './pages/LoginPage.tsx';
 import { SocketDemoPage } from './pages/SocketDemoPage.tsx';
 
 function App() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
-      <nav style={{
-        padding: '10px 20px',
-        borderBottom: '1px solid #ccc',
-        backgroundColor: '#f5f5f5',
-        flexShrink: 0
-      }}>
-        <Link to="/" style={{ marginRight: '20px' }}>Home</Link>
-        <Link to="/socket" style={{ marginRight: '20px' }}>Socket demo</Link>
+      <nav
+        style={{
+          padding: '10px 20px',
+          borderBottom: '1px solid #ccc',
+          backgroundColor: '#f5f5f5',
+          flexShrink: 0,
+        }}
+      >
+        <Link to="/" style={{ marginRight: '20px' }}>
+          Home
+        </Link>
+        <Link to="/socket" style={{ marginRight: '20px' }}>
+          Socket demo
+        </Link>
         <Link to="/login" style={{ marginRight: '20px' }}>
           Login
         </Link>

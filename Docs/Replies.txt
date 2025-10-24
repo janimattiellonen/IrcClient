@@ -14,3 +14,28 @@
 :ergo.test 266 jme 2 2 :Current global users 2, max 2
 :ergo.test 422 jme :MOTD File is missing
 :ergo.test 221 jme +i
+
+
+:jme!~u@epmw7nfq4pm9w.irc JOIN #foo
+:ergo.test 353 jme = #foo :Guest67 jme
+:ergo.test 366 jme #foo :End of NAMES list
+:Guest67!~u@epmw7nfq4pm9w.irc PRIVMSG #foo :Hey
+:Guest67!~u@epmw7nfq4pm9w.irc PRIVMSG jme :Very private yes
+
+// liityn kanavalle #foo3
+:jme4!~u@epmw7nfq4pm9w.irc JOIN #foo3
+// ihmiset jotka ovat kanavalla, minä mukaan lukien
+:ergo.test 353 jme4 = #foo3 :@jme4
+:ergo.test 366 jme4 #foo3 :End of NAMES list
+
+// joku muu kuin minä liittyy kanavalle (jossa olen itse)
+:Guest67!~u@epmw7nfq4pm9w.irc JOIN #foo3
+
+// Guest67 sanoo jotain kanavalle #foo3, jolla olen
+:Guest67!~u@epmw7nfq4pm9w.irc PRIVMSG #foo3 :Hi there!
+
+// kun liityin kanavalle #bar, siellä oli jo Guest67 (jolla op ('@') )
+:ergo.test 353 jme4 = #bar :@Guest67 jme4
+
+
+:Guest67!~u@epmw7nfq4pm9w.irc PART #bar :Textual IRC Client: www.textualapp.com

@@ -6,7 +6,7 @@ export type MessageResponse = {
   original: AppMessage;
   response: AppMessage;
   timestamp: string;
-}
+};
 
 export type SocketContextType = {
   socket: Socket | null;
@@ -15,6 +15,6 @@ export type SocketContextType = {
   disconnect: () => void;
   sendMessage: (message: AppMessage) => void;
   responses: MessageResponse[];
-}
+};
 
 export const SocketContext = createContext<SocketContextType | undefined>(undefined);

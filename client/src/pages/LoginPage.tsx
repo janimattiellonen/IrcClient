@@ -23,7 +23,7 @@ function LoginForm() {
     defaultValues: {
       nickname: nickname || 'jme',
       serverAddress: server || 'localhost',
-      port: port ? String(port) : '6667'
+      port: port ? String(port) : '6667',
     },
   });
 
@@ -38,11 +38,7 @@ function LoginForm() {
       console.log('Server:', server);
       console.log('Port:', port);
 
-      const loginMsg = loginMessage(
-        nickname,
-        server,
-        port
-      );
+      const loginMsg = loginMessage(nickname, server, port);
 
       sendMessage(loginMsg);
 
@@ -71,7 +67,6 @@ function LoginForm() {
     } else {
       disconnect();
     }
-
   };
 
   return (
@@ -143,10 +138,7 @@ function LoginForm() {
         />
       </div>
       <div style={{ marginBottom: '20px' }}>
-        <label
-          htmlFor="port"
-          style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}
-        >
+        <label htmlFor="port" style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
           Port
         </label>
         <input
@@ -188,7 +180,7 @@ function LoginForm() {
           cursor: isSubmitting ? 'not-allowed' : 'pointer',
         }}
       >
-        {isSubmitting ? 'Connecting...' : (isConnected ? 'Disconnect' : 'Connect')}
+        {isSubmitting ? 'Connecting...' : isConnected ? 'Disconnect' : 'Connect'}
       </button>
     </form>
   );

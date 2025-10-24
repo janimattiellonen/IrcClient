@@ -9,7 +9,11 @@
     "tsc": "tsc --noEmit",
     "tsc:watch": "tsc --noEmit --watch"
   },
-  "keywords": ["irc", "shared", "types"],
+  "keywords": [
+    "irc",
+    "shared",
+    "types"
+  ],
   "author": "",
   "license": "ISC",
   "devDependencies": {

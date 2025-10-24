@@ -1,3 +1,1 @@
-export class ChannelRegistry {
-
-}
+export class ChannelRegistry {}

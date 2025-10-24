@@ -3,7 +3,7 @@ import { IrcSessionContext, type IrcSessionContextType } from './IrcSessionConte
 
 type IrcSessionProviderProps = {
   children: ReactNode;
-}
+};
 
 export function IrcSessionProvider({ children }: IrcSessionProviderProps) {
   const [nickname, setNickname] = useState<string>('');
@@ -16,12 +16,8 @@ export function IrcSessionProvider({ children }: IrcSessionProviderProps) {
     setNickname,
     setServer,
     port,
-    setPort
+    setPort,
   };
 
-  return (
-    <IrcSessionContext.Provider value={value}>
-      {children}
-    </IrcSessionContext.Provider>
-  );
+  return <IrcSessionContext.Provider value={value}>{children}</IrcSessionContext.Provider>;
 }

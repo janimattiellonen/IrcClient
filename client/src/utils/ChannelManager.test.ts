@@ -53,8 +53,9 @@ describe('ChannelManager', () => {
 
     channelManager.addChannel(channel);
 
-    expect(() => channelManager.addChannel(channel))
-      .toThrowError('Channel #foo already exists');
+    expect(() => channelManager.addChannel(channel)).toThrowError(
+      'Channel #foo already exists'
+    );
   });
 
   it('gets channel', () => {
@@ -69,7 +70,7 @@ describe('ChannelManager', () => {
 
     expect(channel).not.toBeNull();
     expect(channel!.name).to.equal('#foo');
-  })
+  });
 
   it('gets all channels', () => {
     channelManager['channels'] = {
@@ -89,7 +90,7 @@ describe('ChannelManager', () => {
 
     expect(channels[0].name).to.equal('#foo');
     expect(channels[1].name).to.equal('#bar');
-  })
+  });
 
   it('gets no channel', () => {
     channelManager['channels'] = {
@@ -102,7 +103,7 @@ describe('ChannelManager', () => {
     const channel = channelManager.getChannel('#foos');
 
     expect(channel).toBeNull();
-  })
+  });
 
   it('deletes a previously added channel', () => {
     channelManager['channels'] = {
@@ -115,7 +116,7 @@ describe('ChannelManager', () => {
     channelManager.removeChannel('#foo');
 
     expect(channelManager['channels']).toStrictEqual({});
-  })
+  });
 
   it('cannot delete a non-existing channel', () => {
     channelManager['channels'] = {
@@ -125,7 +126,8 @@ describe('ChannelManager', () => {
       },
     };
 
-    expect(() => channelManager.removeChannel('#foos'))
-      .toThrowError('Channel #foos does not exist');
-  })
+    expect(() => channelManager.removeChannel('#foos')).toThrowError(
+      'Channel #foos does not exist'
+    );
+  });
 });

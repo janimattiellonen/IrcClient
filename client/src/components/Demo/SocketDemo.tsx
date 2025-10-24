@@ -13,7 +13,7 @@ export const SocketDemo = () => {
       sendMessage(genericMessage(message || ''));
       setMessage('');
     }
-  }
+  };
 
   return (
     <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
@@ -34,7 +34,7 @@ export const SocketDemo = () => {
               border: 'none',
               borderRadius: '4px',
               cursor: 'pointer',
-              fontSize: '14px'
+              fontSize: '14px',
             }}
           >
             Connect
@@ -49,7 +49,7 @@ export const SocketDemo = () => {
               border: 'none',
               borderRadius: '4px',
               cursor: 'pointer',
-              fontSize: '14px'
+              fontSize: '14px',
             }}
           >
             Disconnect
@@ -67,7 +67,7 @@ export const SocketDemo = () => {
             padding: '10px',
             width: '70%',
             marginRight: '10px',
-            fontSize: '16px'
+            fontSize: '16px',
           }}
           disabled={!isConnected}
         />
@@ -76,7 +76,7 @@ export const SocketDemo = () => {
           style={{
             padding: '10px 20px',
             fontSize: '16px',
-            cursor: isConnected ? 'pointer' : 'not-allowed'
+            cursor: isConnected ? 'pointer' : 'not-allowed',
           }}
           disabled={!isConnected}
         >
@@ -86,14 +86,16 @@ export const SocketDemo = () => {
 
       <div>
         <h2>Responses:</h2>
-        <div style={{
-          border: '1px solid #ccc',
-          padding: '10px',
-          minHeight: '200px',
-          maxHeight: '400px',
-          overflowY: 'auto',
-          backgroundColor: '#f5f5f5'
-        }}>
+        <div
+          style={{
+            border: '1px solid #ccc',
+            padding: '10px',
+            minHeight: '200px',
+            maxHeight: '400px',
+            overflowY: 'auto',
+            backgroundColor: '#f5f5f5',
+          }}
+        >
           {responses.length === 0 ? (
             <p style={{ color: '#999' }}>No responses yet...</p>
           ) : (
@@ -104,24 +106,27 @@ export const SocketDemo = () => {
                   marginBottom: '10px',
                   padding: '10px',
                   backgroundColor: 'white',
-                  borderRadius: '4px'
+                  borderRadius: '4px',
                 }}
               >
-                <div><strong>You sent:</strong>
+                <div>
+                  <strong>You sent:</strong>
                   {resp.original.type === 'GENERIC_MESSAGE' && (
-                    <div><strong>You sent:</strong> {resp.original.payload.message}</div>
+                    <div>
+                      <strong>You sent:</strong> {resp.original.payload.message}
+                    </div>
                   )}
                 </div>
                 <div style={{ color: '#0066cc' }}>
                   {resp.original.type === 'GENERIC_MESSAGE' && (
-                    <div><strong>You sent:</strong> {resp.original.payload.message}</div>
+                    <div>
+                      <strong>You sent:</strong> {resp.original.payload.message}
+                    </div>
                   )}
                   <strong>Server response is:</strong>
 
-                  {resp.response.type === 'GENERIC_MESSAGE' && (
-                    JSON.stringify(resp.response.payload.message, null,2)
-                  )}
-
+                  {resp.response.type === 'GENERIC_MESSAGE' &&
+                    JSON.stringify(resp.response.payload.message, null, 2)}
                 </div>
                 <div style={{ fontSize: '12px', color: '#666' }}>
                   {new Date(resp.timestamp).toLocaleTimeString()}
@@ -134,4 +139,3 @@ export const SocketDemo = () => {
     </div>
   );
 };
-

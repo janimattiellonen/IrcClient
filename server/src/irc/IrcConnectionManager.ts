@@ -1,7 +1,6 @@
 import { Socket } from 'socket.io';
 import { IrcConnection } from './IrcConnection';
 
-
 type ConnectionInfo = {
   connection: IrcConnection;
   nickname: string;
@@ -18,15 +17,11 @@ export class IrcConnectionManager {
     this.socket = socket;
   }
 
-  createConnection(
-    socket: Socket,
-    config: {host: string, port: number, nickname: string}
-  ) {
-
+  createConnection(socket: Socket, config: { host: string; port: number; nickname: string }) {
     const ircConnection = new IrcConnection({
       host: config.host,
       port: config.port,
-      nickname: config.nickname
+      nickname: config.nickname,
     });
 
     const connectionInfo: ConnectionInfo = {
@@ -34,7 +29,7 @@ export class IrcConnectionManager {
       nickname: config.nickname,
       server: config.host,
       registered: false,
-    }
+    };
 
     this.connections.set(socket.id, connectionInfo);
 
@@ -44,13 +39,13 @@ export class IrcConnectionManager {
         console.log(`IRC registration complete for ${socket.id}`);
         // TODO: Notify web client via Socket.IO
       },
-      onMessage: (data) => {
-        console.log(`IRC message for ${socket.id}:`, data.raw);
-        console.log(`IRC message for ${socket.id}:`, JSON.stringify(data.parsed, null,2));
+      onMessage: (raw, parsed) => {
+        console.log(`IRC message for ${socket.id}:`, raw);
+        console.log(`IRC message for ${socket.id}:`, JSON.stringify(parsed, null, 2));
         // TODO: Forward to web client via Socket.IO
 
         socket.emit('message_response', {
-          data: data.parsed.serverMessage
+          ...parsed,
         });
       },
       onError: (error) => {
@@ -61,11 +56,11 @@ export class IrcConnectionManager {
         console.log(`IRC disconnected for ${socket.id}`);
         this.connections.delete(socket.id);
         // TODO: Notify web client via Socket.IO
-      }
+      },
     });
   }
 
-  closeConnection(clientId: string){
+  closeConnection(clientId: string) {
     const connectionInfo = this.connections.get(clientId);
 
     if (connectionInfo) {

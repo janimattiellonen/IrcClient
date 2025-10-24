@@ -1,23 +1,22 @@
-type ChannelMessage = {
+export type ChannelMessage = {
   id: string;
   timestamp: Date;
   channelName: string;
   source: string;
   message: string;
-}
+};
 
-
-type Channel = {
+export type Channel = {
   name: string;
-  messages: ChannelMessage[]
-}
+  messages: ChannelMessage[];
+};
 
 type ChannelRegistry = {
-  [key: string]: Channel
-}
+  [key: string]: Channel;
+};
 
 export class ChannelManager {
-  private channels: ChannelRegistry
+  private channels: ChannelRegistry;
   private activeChannel: Channel | null = null;
 
   constructor() {
@@ -27,7 +26,7 @@ export class ChannelManager {
 
   /**
    * @param channelName
-   * @return Channel the active channel
+   * @return ChannelButton the active channel
    * @throws Error if no channel is found matching channelName argument
    */
   setActiveChannel(channelName: string): Channel {
@@ -41,7 +40,6 @@ export class ChannelManager {
 
     return channel;
   }
-
 
   /**
    * @param channel

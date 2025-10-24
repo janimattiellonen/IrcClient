@@ -28,6 +28,29 @@ IrcConnection
 
 IrcConnectionManager
     - tältä voi pyytää uuden yhteyden tai olemassa olevaa socket.id:llä
-    - tältä voi pyytää yhteden päättämistä
+    - tältä voi pyytää yhteyden päättämistä
+
+
+
+
+
+Client:
+
+Input field
+
+    handleInput()
+        - SocketContext::sendMessage(joinChannelMessage())
+            {type, payload}
+            - socket::emit('send_message', ...)
+
+
+Server:
+
+    socket.on('send_message', ...)
+        - handleClientMessage()
+            MESSAGE_JOIN_CHANNEL:
+                connection.connection.joinChannel()
+            MESSAGE_LOGIN:
+                handleLogin()
 
 

@@ -1,0 +1,140 @@
+ I have this code:
+
+type GenericServerMessageProps = {
+  host: string;
+  replyCode: string;
+  message: string;
+};
+
+
+export function genericServerMessage(
+  params: GenericServerMessageProps,
+): Message<typeof SERVER_MESSAGE_GENERIC_MESSAGE, GenericServerMessagePayload> {
+  const { host, replyCode, message } = params;
+
+  return {
+    type: SERVER_MESSAGE_GENERIC_MESSAGE,
+    payload: {
+      host,
+      replyCode,
+      message,
+    },
+  };
+}
+
+The input params of genericServerMessage are included in the output type. I have another similar function
+with the same "issue". Can I somehow generalize this to minimize duplication?
+
+⏺ Yes, you can definitely reduce this duplication! I'd like to see the other similar function and the Message type
+  definition to suggest the best approach. Can you share those?
+
+  In the meantime, here are a few options:
+
+  Option 1: Generic message creator helper
+  function createMessage<T extends string, P>(
+    type: T,
+    payload: P
+  ): Message<T, P> {
+    return { type, payload };
+  }
+
+  export function genericServerMessage(params: GenericServerMessageProps) {
+    return createMessage(SERVER_MESSAGE_GENERIC_MESSAGE, params);
+  }
+
+  Option 2: Eliminate the destructuring entirely
+  export function genericServerMessage(
+    payload: GenericServerMessagePayload,
+  ): Message<typeof SERVER_MESSAGE_GENERIC_MESSAGE, GenericServerMessagePayload> {
+    return {
+      type: SERVER_MESSAGE_GENERIC_MESSAGE,
+      payload,
+    };
+  }
+
+  Option 3: Generic factory function generator
+  function createMessageFactory<T extends string, P>(type: T) {
+    return (payload: P): Message<T, P> => ({
+      type,
+      payload,
+    });
+  }
+
+  export const genericServerMessage = createMessageFactory<
+    typeof SERVER_MESSAGE_GENERIC_MESSAGE,
+    GenericServerMessagePayload
+  >(SERVER_MESSAGE_GENERIC_MESSAGE);
+
+  Can you show me the other function and the Message type so I can recommend the best approach for your specific case?
+
+> type ServerChannelUserListProps = {
+  channel: string;
+  channelType: string;
+  host: string;
+  nicks: string[];
+  replyCode: string;
+};
+
+export function serverChannelUserList(
+  params: ServerChannelUserListProps,
+): Message<typeof SERVER_MESSAGE_CHANNEL_USER_LIST, ChannelUserListServerMessagePayload> {
+  const { channel, channelType, host, nicks, replyCode } = params;
+
+  return {
+    type: SERVER_MESSAGE_CHANNEL_USER_LIST,
+    payload: {
+      host,
+      replyCode,
+      channel,
+      channelType,
+      nicks,
+    },
+  };
+}
+
+export type Message<T extends string, P> = {
+  type: T;
+  payload: P;
+};
+
+⏺ Perfect! I can see the pattern. The *Props types and *Payload types are identical, and you're doing unnecessary
+  destructuring and reconstruction. Here's how to simplify:
+
+  Best approach - Generic message creator:
+
+  // Generic helper function
+  function createMessage<T extends string, P>(
+    type: T,
+    payload: P
+  ): Message<T, P> {
+    return { type, payload };
+  }
+
+  // Now your functions become simple one-liners
+  export function genericServerMessage(
+    payload: GenericServerMessagePayload,
+  ) {
+    return createMessage(SERVER_MESSAGE_GENERIC_MESSAGE, payload);
+  }
+
+  export function serverChannelUserList(
+    payload: ChannelUserListServerMessagePayload,
+  ) {
+    return createMessage(SERVER_MESSAGE_CHANNEL_USER_LIST, payload);
+  }
+
+  This eliminates:
+  - The separate *Props types (just use the *Payload types directly)
+  - The destructuring and reconstruction
+  - The verbose return type annotations (TypeScript infers them)
+
+  Alternative - If you want even less code:
+
+  const createMessageFactory = <T extends string, P>(type: T) =>
+    (payload: P): Message<T, P> => ({ type, payload });
+
+  export const genericServerMessage = createMessageFactory(SERVER_MESSAGE_GENERIC_MESSAGE);
+  export const serverChannelUserList = createMessageFactory(SERVER_MESSAGE_CHANNEL_USER_LIST);
+
+  I'd recommend the first approach as it's more explicit and easier to understand. Would you like me to refactor the file
+   for you?

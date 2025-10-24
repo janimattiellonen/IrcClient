@@ -7,6 +7,7 @@ interface MessageResponse {
   timestamp: string;
 }
 
+// TODO: Delete if not needed?
 export const useSocket = () => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);

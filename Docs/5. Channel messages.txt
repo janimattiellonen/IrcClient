@@ -1,0 +1,52 @@
+5. ChannelButton messages
+
+Messages to and from a channel must be maintained in a way that allows for easy access. When joining a channel, a new window should be opened with contents regarding that channel visible. When changing channel windows, correct content should be visible.
+
+We need a registry that can be use for adding new channel, removing channel and fetching channel.
+
+Example:
+
+
+type ChannelMessage = {
+    id: string (uuid)
+    timestamp: Date
+    channelName: string
+    source: string (nick for the person who wrote this message) 
+    message: string
+}
+
+type ChannelUser = {
+    nick: string;
+}
+
+type ChannelButton = {
+    name: string;
+    topic: string
+    mode: string;
+    users: ChannelUser[]
+    messages: ChannelMessage[]
+}
+
+type ChannelRegistry = {
+    [key: string]: ChannelButton
+}
+
+class ChannelManager {
+    channels: ChannelRegistry
+    activeChannel: ChannelButton | null
+
+    setActiveChannel: (channel: string | null) => void
+
+    getActiveChannel: () => ChannelButton | null
+
+    addChannel: (channel: ChannelButton) => void
+
+    removeChannel: (channelName: string) => void
+
+    getChannel: (channelName: string) => ChannelButton
+
+    getChannels: () => ChannelButton[]
+
+    addMessageToChannel(channelName: string, message: ChannelMessage): void
+
+}

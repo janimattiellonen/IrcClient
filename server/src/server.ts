@@ -6,13 +6,13 @@ import { handleClientMessage, initializeMessageHandler } from './irc/messageHand
 import { IrcConnectionManager } from './irc/IrcConnectionManager';
 
 const fastify = Fastify({
-  logger: true
+  logger: true,
 });
 
 // Enable CORS
 await fastify.register(cors, {
   origin: ['http://localhost:5173', 'http://localhost:5174'], // Vite ports
-  credentials: true
+  credentials: true,
 });
 
 // Start Fastify server
@@ -25,10 +25,9 @@ const start = async () => {
     const io = new SocketIOServer(fastify.server, {
       cors: {
         origin: ['http://localhost:5173', 'http://localhost:5174'],
-        credentials: true
-      }
+        credentials: true,
+      },
     });
-
 
     //let currentSocket = null;
     const connectionManager = new IrcConnectionManager();
@@ -41,48 +40,28 @@ const start = async () => {
       //connectionManager.setSocket(socket);
 
       // Echo handler - receives message and sends back a response
-        socket.on('send_message', (data: { message: AppMessage }) => {
-
-
-          handleClientMessage(data.message, socket)
-  /*
-          // THis code was moved inside handleClientMessage
-          if (data.message.type === MESSAGE_LOGIN) {
-            const ircSocket = client.connect(data.message.payload.server, data.message.payload.port);
-            const nickname = data.message.payload.nickname;
-
-            ircSocket.on('connect', () => {
-              ircSocket.write(`NICK ${nickname}\r\n`);
-              ircSocket.write('USER myuser 0 * :Real Name\r\n');
-            });
-
-            ircSocket.on('data', (data) => {
-              // Parse IRC protocol messages
-            });
-          }
-*/
-
-          console.log('Received message:', JSON.stringify(data.message, null,2));
+      socket.on('send_message', (data: { message: AppMessage }) => {
+        handleClientMessage(data.message, socket);
+        console.log('Received message:', JSON.stringify(data.message, null, 2));
 
         // parse incoming message
         // find suitable handler
         // process request
         // respond to client
-
-
+/*
         // Echo back with a response
         socket.emit('message_response', {
           original: data.message,
           response: data.message,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         });
+        */
       });
 
       socket.on('disconnect', () => {
         console.log('Client disconnected:', socket.id);
       });
     });
-
   } catch (err) {
     fastify.log.error(err);
     process.exit(1);
