@@ -6,9 +6,16 @@ export type ChannelMessage = {
   message: string;
 };
 
+type User = {
+  nick: string;
+  user: string;
+  host: string;
+}
+
 export type Channel = {
   name: string;
   messages: ChannelMessage[];
+  users: User[]
 };
 
 type ChannelRegistry = {

@@ -14,7 +14,7 @@ export type SocketContextType = {
   connect: () => void;
   disconnect: () => void;
   sendMessage: (message: AppMessage) => void;
-  responses: MessageResponse[];
+  responses: AppMessage[];
 };
 
 export const SocketContext = createContext<SocketContextType | undefined>(undefined);

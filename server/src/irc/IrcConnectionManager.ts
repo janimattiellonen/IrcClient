@@ -39,13 +39,13 @@ export class IrcConnectionManager {
         console.log(`IRC registration complete for ${socket.id}`);
         // TODO: Notify web client via Socket.IO
       },
-      onMessage: (raw, parsed) => {
+      onMessage: (raw, message) => {
         console.log(`IRC message for ${socket.id}:`, raw);
-        console.log(`IRC message for ${socket.id}:`, JSON.stringify(parsed, null, 2));
+        console.log(`IRC message for ${socket.id}:`, JSON.stringify(message, null, 2));
         // TODO: Forward to web client via Socket.IO
 
         socket.emit('message_response', {
-          ...parsed,
+          ...message,
         });
       },
       onError: (error) => {

@@ -1,6 +1,6 @@
 import './IrcView.css';
 import { Input } from '../components/Input.tsx';
-import type { MessageResponse } from '../contexts/SocketContextDefinition.ts';
+//import type { MessageResponse } from '../contexts/SocketContextDefinition.ts';
 import { ChannelBar } from '../components/channels/ChannelBar.tsx';
 import type { AppMessage } from 'shared/messageTypes.ts';
 

@@ -1,9 +1,10 @@
 import {
+  ChannelUserJoinServerMessagePayload,
   ChannelUserListServerMessagePayload,
   GenericServerMessagePayload,
   Message,
   SERVER_MESSAGE_CHANNEL_USER_LIST,
-  SERVER_MESSAGE_GENERIC_MESSAGE,
+  SERVER_MESSAGE_GENERIC_MESSAGE, SERVER_MESSAGE_CHANNEL_USER_JOIN,
 } from 'shared/messageTypes';
 
 type ServerChannelUserListProps = {
@@ -27,6 +28,29 @@ export function serverChannelUserList(
       channel,
       channelType,
       nicks,
+    },
+  };
+}
+
+type ServerChannelJoinProps = {
+  channel: string;
+  user: {
+    user: string;
+    nick: string;
+    host: string;
+  };
+};
+
+export function serverChannelUserJoin(
+  params: ServerChannelJoinProps,
+): Message<typeof SERVER_MESSAGE_CHANNEL_USER_JOIN, ChannelUserJoinServerMessagePayload> {
+  const { channel, user } = params;
+
+  return {
+    type: SERVER_MESSAGE_CHANNEL_USER_JOIN,
+    payload: {
+      channel,
+      user
     },
   };
 }

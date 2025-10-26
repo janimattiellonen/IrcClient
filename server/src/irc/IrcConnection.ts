@@ -1,6 +1,6 @@
 import { TcpClient } from './TcpClient';
 import { IrcProtocol } from './IrcProtocol';
-import { genericServerMessage, serverChannelUserList } from '../messages/serverMessages';
+import { genericServerMessage, serverChannelUserJoin, serverChannelUserList } from '../messages/serverMessages';
 import { AppMessage } from 'shared/messageTypes';
 
 export type IrcConnectionConfig = {
@@ -70,22 +70,35 @@ export class IrcConnection {
         this.sendPong(parsed.params[0]);
       }
     } else {
+      const message = IrcProtocol.parseMessage(raw);
+
+      if (!message) {
+        return;
+      }
+      events.onMessage(raw, message);
+
+
+      // OLD CODE
+      /*
       const parsed = IrcProtocol.parseMessage(raw);
       console.log(`handleIrcMessage, message, parsed: ${JSON.stringify(parsed, null, 2)}`);
 
-      switch (parsed.replyCode) {
-        case '353': {
-          events.onMessage(raw, serverChannelUserList(parsed));
-          break;
+      if (parsed.replyCode !== null) {
+        switch (parsed.replyCode) {
+          case '353': {
+            events.onMessage(raw, serverChannelUserList(parsed));
+            break;
+          }
+          default: {
+            events.onMessage(raw, genericServerMessage(parsed));
+            break;
+          }
         }
-        default: {
-          events.onMessage(raw, genericServerMessage(parsed));
-          break;
-        }
+      } else {
+        // TODO: need to add "type check" here
+        events.onMessage(raw, serverChannelUserJoin(parsed));
       }
-
-      console.log(`handleIrcMessage, parsed: ${JSON.stringify(parsed, null, 2)}`);
-      //events.onMessage({raw, parsed});
+      */
     }
   }
 

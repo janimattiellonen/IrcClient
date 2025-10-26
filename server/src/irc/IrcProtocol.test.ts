@@ -52,9 +52,9 @@ describe('parseChannelUserList', () => {
   });
 });
 
-describe('parseHost', () => {
-  it('should return a parsed host', () => {
-    const host = IrcProtocol.parseHost(':ergo.test 353 jme = #foo :Guest67 jme');
+describe('parseServerHost', () => {
+  it('should return a parsed server host', () => {
+    const host = IrcProtocol.parseServerHost(':ergo.test 353 jme = #foo :Guest67 jme');
 
     expect(host).toBe('ergo.test');
   });
@@ -68,7 +68,7 @@ describe('parseUser', () => {
       nick: 'Guest67',
       user: '~u',
       host: 'epmw7nfq4pm9w.irc',
-    }
+    };
 
     expect(user).toEqual(expected);
   });
@@ -98,17 +98,35 @@ describe('hasUser', () => {
   });
 });
 
-describe('hasHost', () => {
-  it('should have a host part', () => {
-    const status = IrcProtocol.hasHost(':ergo.test 353 jme = #foo :Guest67 jme');
+describe('hasServerHost', () => {
+  it('should have a server host part', () => {
+    const status = IrcProtocol.hasServerHost(':ergo.test 353 jme = #foo :Guest67 jme');
 
     expect(status).toEqual(true);
   });
 
   it('should not have a host part', () => {
-    const status = IrcProtocol.hasHost(':Guest67!~u@epmw7nfq4pm9w.irc JOIN #foo3');
+    const status = IrcProtocol.hasServerHost(':Guest67!~u@epmw7nfq4pm9w.irc JOIN #foo3');
 
     expect(status).toEqual(false);
   });
+});
+
+describe('parseUserChannelJoin', () => {
+  it('should return a parsed channel join object', () => {
+    const channelJoin = IrcProtocol.parseUserChannelJoin(':Guest67!~u@epmw7nfq4pm9w.irc JOIN #foo3');
+
+    const expected = {
+      user: {
+        nick: 'Guest67',
+        user: '~u',
+        host: 'epmw7nfq4pm9w.irc',
+      },
+      channel: '#foo3',
+    };
+
+    expect(channelJoin).toEqual(expected);
+  });
+
 });
 

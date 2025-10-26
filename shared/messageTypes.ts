@@ -9,6 +9,8 @@ export const MESSAGE_GENERIC_MESSAGE = 'GENERIC_MESSAGE';
 
 export const SERVER_MESSAGE_CHANNEL_USER_LIST = 'SERVER_MESSAGE_CHANNEL_USER_LIST';
 
+export const SERVER_MESSAGE_CHANNEL_USER_JOIN = 'SEVER_MESSAGE_CHANNEL_USER_JOIN';
+
 export const SERVER_MESSAGE_GENERIC_MESSAGE = 'SERVER_MESSAGE_GENERIC_MESSAGE';
 
 export type LoginPayload = {
@@ -27,13 +29,22 @@ export type GenericMessagePayload = {
 
 export type ServerMessagePayload = {
   host: string;
-  replyCode: string;
+  replyCode?: string | null;
 };
 
 export type ChannelUserListServerMessagePayload = ServerMessagePayload & {
   channelType: string;
   channel: string;
   nicks: string[];
+};
+
+export type ChannelUserJoinServerMessagePayload = {
+  channel: string;
+  user: {
+    nick: string;
+    user: string;
+    host: string;
+  }
 };
 
 export type GenericServerMessagePayload = ServerMessagePayload & {
@@ -45,6 +56,7 @@ export type MessageRegistry = {
   [MESSAGE_JOIN_CHANNEL]: JoinChannelPayload;
   [MESSAGE_GENERIC_MESSAGE]: GenericMessagePayload;
   [SERVER_MESSAGE_CHANNEL_USER_LIST]: ChannelUserListServerMessagePayload;
+  [SERVER_MESSAGE_CHANNEL_USER_JOIN]: ChannelUserJoinServerMessagePayload,
   [SERVER_MESSAGE_GENERIC_MESSAGE]: GenericServerMessagePayload;
 };
 

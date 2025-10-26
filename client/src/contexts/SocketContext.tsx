@@ -1,9 +1,13 @@
 import { useEffect, useState, useCallback, type ReactNode } from 'react';
 import { io, type Socket } from 'socket.io-client';
-import type { AppMessage } from '../../../shared/messageTypes';
+import {
+  type AppMessage,
+  SERVER_MESSAGE_CHANNEL_USER_JOIN,
+  SERVER_MESSAGE_GENERIC_MESSAGE,
+} from '../../../shared/messageTypes';
 import {
   SocketContext,
-  type MessageResponse,
+  //type MessageResponse,
   type SocketContextType,
 } from './SocketContextDefinition';
 import { useIrcChannelContext } from '../hooks/useIrcChannelContext.ts';
@@ -15,7 +19,7 @@ type SocketProviderProps = {
 export const SocketProvider = ({ children }: SocketProviderProps) => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
-  const [responses, setResponses] = useState<MessageResponse[]>([]);
+  const [responses, setResponses] = useState<AppMessage[]>([]);
   const { addChannel } = useIrcChannelContext();
 
   useEffect(() => {
@@ -38,10 +42,17 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
       setIsConnected(false);
     });
 
-    socketInstance.on('message_response', (data: MessageResponse) => {
-      console.log('Received response:', data);
+    socketInstance.on('message_response', (data: AppMessage) => {
+      console.log('Received response: ' + JSON.stringify(data, null,2));
 
-      data.response.type
+      if (data.type === SERVER_MESSAGE_GENERIC_MESSAGE) {
+        setResponses((prev) => [...prev, data]);
+      }
+
+      if (data.type === SERVER_MESSAGE_CHANNEL_USER_JOIN) {
+
+      }
+
       // data.response:
       /*
       {
@@ -76,7 +87,6 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
       }
 */
 
-      setResponses((prev) => [...prev, data]);
     });
 
     setSocket(socketInstance);
