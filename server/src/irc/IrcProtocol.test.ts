@@ -1,5 +1,4 @@
 import { describe, it, expect } from 'vitest';
-import { formatTimestamp } from '../utils/formatters';
 
 import { IrcProtocol } from './IrcProtocol';
 
@@ -17,38 +16,33 @@ describe('formatUser', () => {
 
 describe('parseCommand', () => {
   it('should return command and params', () => {
-    const foo = IrcProtocol.parseCommand('PING jme');
+    const result = IrcProtocol.parseCommand('PING jme');
 
-    expect(foo.command).toBe('PING');
-    expect(foo.params).toEqual(['jme']);
+    expect(result.kind).toBe('command');
+    expect(result.command).toBe('PING');
+    expect(result.params).toEqual(['jme']);
   });
 });
 
 describe('isServerCommand', () => {
   it('should return true', () => {
-    const foo = IrcProtocol.isServerCommand('PING jme');
-
-    expect(foo).toBe(true);
+    expect(IrcProtocol.isServerCommand('PING jme')).toBe(true);
   });
 
   it('should return false', () => {
-    const foo = IrcProtocol.isServerCommand(':ergo.test 255 jme :I have 2 clients and 0 servers');
-
-    expect(foo).toBe(false);
+    expect(IrcProtocol.isServerCommand(':ergo.test 255 jme :I have 2 clients and 0 servers')).toBe(false);
   });
 });
 
 describe('parseChannelUserList', () => {
   it('should return a parsed user channel list', () => {
-    const foo = IrcProtocol.parseChannelUserList(':ergo.test 353 jme = #foo :Guest67 jme');
+    const result = IrcProtocol.parseChannelUserList(':ergo.test 353 jme = #foo :Guest67 jme');
 
-    expect(foo).toBe({});
-  });
-
-  it('should return false', () => {
-    const foo = IrcProtocol.isServerCommand(':ergo.test 255 jme :I have 2 clients and 0 servers');
-
-    expect(foo).toBe(false);
+    expect(result.host).toBe('ergo.test');
+    expect(result.replyCode).toBe('353');
+    expect(result.channelType).toBe('=');
+    expect(result.channel).toBe('#foo');
+    expect(result.nicks).toEqual(['Guest67', 'jme']);
   });
 });
 
@@ -64,16 +58,13 @@ describe('parseUser', () => {
   it('should return a parsed user', () => {
     const user = IrcProtocol.parseUser(':Guest67!~u@epmw7nfq4pm9w.irc JOIN #foo3');
 
-    const expected = {
+    expect(user).toEqual({
       nick: 'Guest67',
       user: '~u',
       host: 'epmw7nfq4pm9w.irc',
-    };
-
-    expect(user).toEqual(expected);
+    });
   });
 });
-
 
 describe('parseReplyCode', () => {
   it('should return parsed reply code', () => {
@@ -81,34 +72,25 @@ describe('parseReplyCode', () => {
 
     expect(parseReplyCode).toBe('353');
   });
-
 });
 
 describe('hasUser', () => {
   it('should have a user part', () => {
-    const status = IrcProtocol.hasUser(':Guest67!~u@epmw7nfq4pm9w.irc JOIN #foo3');
-
-    expect(status).toEqual(true);
+    expect(IrcProtocol.hasUser(':Guest67!~u@epmw7nfq4pm9w.irc JOIN #foo3')).toBe(true);
   });
 
   it('should not have a user part', () => {
-    const status = IrcProtocol.hasUser(':ergo.test 353 jme = #foo :Guest67 jme');
-
-    expect(status).toEqual(false);
+    expect(IrcProtocol.hasUser(':ergo.test 353 jme = #foo :Guest67 jme')).toBe(false);
   });
 });
 
 describe('hasServerHost', () => {
   it('should have a server host part', () => {
-    const status = IrcProtocol.hasServerHost(':ergo.test 353 jme = #foo :Guest67 jme');
-
-    expect(status).toEqual(true);
+    expect(IrcProtocol.hasServerHost(':ergo.test 353 jme = #foo :Guest67 jme')).toBe(true);
   });
 
   it('should not have a host part', () => {
-    const status = IrcProtocol.hasServerHost(':Guest67!~u@epmw7nfq4pm9w.irc JOIN #foo3');
-
-    expect(status).toEqual(false);
+    expect(IrcProtocol.hasServerHost(':Guest67!~u@epmw7nfq4pm9w.irc JOIN #foo3')).toBe(false);
   });
 });
 
@@ -116,17 +98,78 @@ describe('parseUserChannelJoin', () => {
   it('should return a parsed channel join object', () => {
     const channelJoin = IrcProtocol.parseUserChannelJoin(':Guest67!~u@epmw7nfq4pm9w.irc JOIN #foo3');
 
-    const expected = {
+    expect(channelJoin).toEqual({
       user: {
         nick: 'Guest67',
         user: '~u',
         host: 'epmw7nfq4pm9w.irc',
       },
       channel: '#foo3',
-    };
-
-    expect(channelJoin).toEqual(expected);
+    });
   });
-
 });
 
+describe('parseChannelMessage', () => {
+  it('should return a parsed channel message object', () => {
+    const channelMessage = IrcProtocol.parseChannelMessage(':Guest67!~u@epmw7nfq4pm9w.irc PRIVMSG #foo3 :Hi there!');
+
+    expect(channelMessage).toEqual({
+      user: {
+        nick: 'Guest67',
+        user: '~u',
+        host: 'epmw7nfq4pm9w.irc',
+      },
+      channel: '#foo3',
+      message: 'Hi there!',
+    });
+  });
+});
+
+describe('parseMessage', () => {
+  it('should parse a PING command', () => {
+    const result = IrcProtocol.parseMessage('PING jme');
+
+    expect(result).toEqual({
+      kind: 'command',
+      command: 'PING',
+      params: ['jme'],
+    });
+  });
+
+  it('should parse a server numeric reply', () => {
+    const result = IrcProtocol.parseMessage(':ergo.test 001 jme :Welcome to the ErgoTest IRC Network jme');
+
+    expect(result).toEqual({
+      kind: 'server',
+      host: 'ergo.test',
+      replyCode: '001',
+      target: 'jme',
+      params: [],
+      trailing: 'Welcome to the ErgoTest IRC Network jme',
+    });
+  });
+
+  it('should parse a user JOIN message', () => {
+    const result = IrcProtocol.parseMessage(':Guest67!~u@epmw7nfq4pm9w.irc JOIN #foo3');
+
+    expect(result).toEqual({
+      kind: 'user',
+      user: { nick: 'Guest67', user: '~u', host: 'epmw7nfq4pm9w.irc' },
+      command: 'JOIN',
+      params: ['#foo3'],
+      trailing: '',
+    });
+  });
+
+  it('should parse a user PRIVMSG', () => {
+    const result = IrcProtocol.parseMessage(':Guest67!~u@epmw7nfq4pm9w.irc PRIVMSG #foo3 :Hi there!');
+
+    expect(result).toEqual({
+      kind: 'user',
+      user: { nick: 'Guest67', user: '~u', host: 'epmw7nfq4pm9w.irc' },
+      command: 'PRIVMSG',
+      params: ['#foo3'],
+      trailing: 'Hi there!',
+    });
+  });
+});

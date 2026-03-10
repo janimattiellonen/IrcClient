@@ -9,7 +9,10 @@ export const MESSAGE_GENERIC_MESSAGE = 'GENERIC_MESSAGE';
 
 export const SERVER_MESSAGE_CHANNEL_USER_LIST = 'SERVER_MESSAGE_CHANNEL_USER_LIST';
 
-export const SERVER_MESSAGE_CHANNEL_USER_JOIN = 'SEVER_MESSAGE_CHANNEL_USER_JOIN';
+export const SERVER_MESSAGE_CHANNEL_USER_JOIN = 'SERVER_MESSAGE_CHANNEL_USER_JOIN';
+
+export const SERVER_MESSAGE_CHANNEL_USER_MESSAGE = 'SERVER_MESSAGE_CHANNEL_USER_MESSAGE';
+
 
 export const SERVER_MESSAGE_GENERIC_MESSAGE = 'SERVER_MESSAGE_GENERIC_MESSAGE';
 
@@ -47,6 +50,16 @@ export type ChannelUserJoinServerMessagePayload = {
   }
 };
 
+export type ChannelUserMessageMessagePayload = {
+  channel: string;
+  user: {
+    nick: string;
+    user: string;
+    host: string;
+  };
+  message: string;
+}
+
 export type GenericServerMessagePayload = ServerMessagePayload & {
   message: string;
 };
@@ -58,6 +71,7 @@ export type MessageRegistry = {
   [SERVER_MESSAGE_CHANNEL_USER_LIST]: ChannelUserListServerMessagePayload;
   [SERVER_MESSAGE_CHANNEL_USER_JOIN]: ChannelUserJoinServerMessagePayload,
   [SERVER_MESSAGE_GENERIC_MESSAGE]: GenericServerMessagePayload;
+  [SERVER_MESSAGE_CHANNEL_USER_MESSAGE]: ChannelUserMessageMessagePayload
 };
 
 export type AppMessage = {

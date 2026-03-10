@@ -1,16 +1,13 @@
 import { useEffect, useState, useCallback, type ReactNode } from 'react';
 import { io, type Socket } from 'socket.io-client';
-import {
-  type AppMessage,
-  SERVER_MESSAGE_CHANNEL_USER_JOIN,
-  SERVER_MESSAGE_GENERIC_MESSAGE,
-} from '../../../shared/messageTypes';
+import type { ClientMessage } from '../../../shared/protocol';
+import type { ServerEvent } from '../../../shared/protocol';
 import {
   SocketContext,
-  //type MessageResponse,
   type SocketContextType,
 } from './SocketContextDefinition';
 import { useIrcChannelContext } from '../hooks/useIrcChannelContext.ts';
+import { useMessageRouter } from '../hooks/useMessageRouter.ts';
 
 type SocketProviderProps = {
   children: ReactNode;
@@ -19,8 +16,17 @@ type SocketProviderProps = {
 export const SocketProvider = ({ children }: SocketProviderProps) => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
-  const [responses, setResponses] = useState<AppMessage[]>([]);
+  const [responses, setResponses] = useState<ServerEvent[]>([]);
   const { addChannel } = useIrcChannelContext();
+
+  const { attachToSocket } = useMessageRouter({
+    onGenericMessage: (event: ServerEvent) => {
+      setResponses((prev) => [...prev, event]);
+    },
+    onError: (code, message) => {
+      console.error(`IRC error${code ? ` (${code})` : ''}: ${message}`);
+    },
+  });
 
   useEffect(() => {
     const socketInstance = io('http://localhost:3001', {
@@ -29,72 +35,27 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
     });
 
     socketInstance.on('connect', () => {
-      console.log('Connected to server');
       setIsConnected(true);
       addChannel({
         name: 'Console',
         messages: [],
+        users: [],
       });
     });
 
     socketInstance.on('disconnect', () => {
-      console.log('Disconnected from server');
       setIsConnected(false);
     });
 
-    socketInstance.on('message_response', (data: AppMessage) => {
-      console.log('Received response: ' + JSON.stringify(data, null,2));
-
-      if (data.type === SERVER_MESSAGE_GENERIC_MESSAGE) {
-        setResponses((prev) => [...prev, data]);
-      }
-
-      if (data.type === SERVER_MESSAGE_CHANNEL_USER_JOIN) {
-
-      }
-
-      // data.response:
-      /*
-      {
-        raw: ':Guest67!~u@epmw7nfq4pm9w.irc JOIN #foo3'
-        type: 'CHANNEL_NEW_USER',
-        user: {
-          nick: 'Guest67',
-          user: '~u',
-          host: 'epmw7nfq4pm9w.irc',
-        }
-        channel: '#foo3',
-      }
-      {
-        raw: ':ergo.test 353 jme4 = #foo3 :@jme4',
-        type: 'CHANNEL_USER_LIST',
-        channel: '#foo3',
-        users: {
-          '@jme4',
-          // tai
-          {
-            nick: 'jme4'
-            'isChannelOperator': true
-          }
-        }
-      }
-      */
-
-      // TODO: Pseudo code
-      /*
-      if (data.response.type === 'USER_JOINS_CHANNEL') {
-
-      }
-*/
-
-    });
+    const detachRouter = attachToSocket(socketInstance);
 
     setSocket(socketInstance);
 
     return () => {
+      detachRouter();
       socketInstance.close();
     };
-  }, [addChannel]);
+  }, [addChannel, attachToSocket]);
 
   const connect = useCallback(() => {
     if (socket && !isConnected) {
@@ -109,12 +70,12 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
   }, [socket, isConnected]);
 
   const sendMessage = useCallback(
-    (message: AppMessage) => {
+    (message: ClientMessage) => {
       if (socket && isConnected) {
         socket.emit('send_message', { message });
       }
     },
-    [socket, isConnected]
+    [socket, isConnected],
   );
 
   const value: SocketContextType = {

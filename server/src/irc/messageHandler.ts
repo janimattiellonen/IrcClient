@@ -1,4 +1,4 @@
-import { AppMessage, MESSAGE_JOIN_CHANNEL, MESSAGE_LOGIN } from 'shared/messageTypes';
+import { type ClientMessage, MESSAGE_JOIN_CHANNEL, MESSAGE_LOGIN, MESSAGE_SEND_MESSAGE } from 'shared/protocol';
 
 import { connect } from './client';
 import { Socket } from 'socket.io';
@@ -11,9 +11,7 @@ export function initializeMessageHandler(manager: IrcConnectionManager): void {
   connectionManager = manager;
 }
 
-export function handleClientMessage(message: AppMessage, socket: Socket) {
-  // example on how to automatically have access to the available properties
-  // in payload
+export function handleClientMessage(message: ClientMessage, socket: Socket) {
   if (message.type === MESSAGE_JOIN_CHANNEL) {
     console.log('handleClientMessage: JOIN_CHANNEL');
     console.log(`Message: ${JSON.stringify(message, null, 2)}`);
@@ -28,11 +26,16 @@ export function handleClientMessage(message: AppMessage, socket: Socket) {
       );
     }
   } else if (message.type === MESSAGE_LOGIN) {
-    if (message.type === MESSAGE_LOGIN) {
-      handleLogin(message.payload, socket);
+    handleLogin(message.payload, socket);
+  } else if (message.type === MESSAGE_SEND_MESSAGE) {
+    const connection = connectionManager.getConnection(socket.id);
+
+    if (connection) {
+      connection.connection.sendMessage(message.payload.channel, message.payload.message);
     }
   } else {
-    console.log(`UUGH`);
+    const _exhaustive: never = message;
+    console.log(`Unhandled message type: ${JSON.stringify(_exhaustive)}`);
   }
 }
 

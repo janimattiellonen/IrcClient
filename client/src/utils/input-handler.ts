@@ -1,17 +1,20 @@
 import { isIrcCommand, parseIrcCommand } from './irc.ts';
-import type { AppMessage } from 'shared/messageTypes.ts';
-import { COMMAND_JOIN } from 'shared/commandTypes.ts';
-import { joinChannelMessage } from '../messages/messages.ts';
+import type { ClientMessage } from '../../../shared/protocol';
+import { COMMAND_JOIN } from '../../../shared/commandTypes.ts';
+import { joinChannelMessage, sendMessageMessage } from '../messages/messages.ts';
 
-export function handleInput(input: string, sendMessage: (message: AppMessage) => void) {
+export function handleInput(
+  input: string,
+  sendMessage: (message: ClientMessage) => void,
+  activeChannel: string | null
+) {
   if (isIrcCommand(input)) {
     const command = parseIrcCommand(input);
 
-    // handleIrcCommand(command);
-
-    if (command.type === COMMAND_JOIN)
-      if (command.payload.channel) {
-        sendMessage(joinChannelMessage(command.payload.channel));
-      }
+    if (command.type === COMMAND_JOIN && command.payload.channel) {
+      sendMessage(joinChannelMessage(command.payload.channel));
+    }
+  } else if (activeChannel) {
+    sendMessage(sendMessageMessage(activeChannel, input));
   }
 }

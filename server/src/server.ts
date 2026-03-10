@@ -1,7 +1,7 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import { Server as SocketIOServer } from 'socket.io';
-import { AppMessage, MESSAGE_JOIN_CHANNEL, MESSAGE_LOGIN } from '../../shared/messageTypes';
+import type { ClientMessage } from '../../shared/protocol';
 import { handleClientMessage, initializeMessageHandler } from './irc/messageHandler';
 import { IrcConnectionManager } from './irc/IrcConnectionManager';
 
@@ -40,7 +40,7 @@ const start = async () => {
       //connectionManager.setSocket(socket);
 
       // Echo handler - receives message and sends back a response
-      socket.on('send_message', (data: { message: AppMessage }) => {
+      socket.on('send_message', (data: { message: ClientMessage }) => {
         handleClientMessage(data.message, socket);
         console.log('Received message:', JSON.stringify(data.message, null, 2));
 

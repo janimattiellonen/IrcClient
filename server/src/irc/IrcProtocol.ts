@@ -1,53 +1,33 @@
-import { Channel } from 'node:diagnostics_channel';
-import { serverChannelUserList, serverChannelUserJoin, genericServerMessage } from '../messages/serverMessages';
-
-/**
- * Represents the prefix part of an IRC message
- * Format: servername | nick [ '!' user ] [ '@' host ]
- */
-type IrcPrefix = {
-  raw: string;
-  servername?: string;
-  nick?: string;
-  user?: string;
-  host?: string;
-};
-
-type User = {
+export type IrcUser = {
   nick: string;
   user: string;
   host: string;
-}
+};
 
-type ChannelJoin = {
-  user: User;
-  channel: string;
-}
-
-type ServerMessageResponse = {
+export type ParsedServerMessage = {
+  kind: 'server';
+  host: string;
   replyCode: string;
-  serverMessage: string;
-}
-
-/**
- * Represents a parsed IRC protocol message
- */
-type ParsedIrcMessage = {
-  raw: string;
-  prefix?: IrcPrefix;
-  command: string; // Either a word command (e.g., 'PRIVMSG') or numeric reply (e.g., '001')
-  params: string[]; // All parameters before the trailing
-  trailing?: string; // The message after the final ':'
+  target: string;
+  params: string[];
+  trailing: string;
 };
 
-/**
- * Represents a parsed numeric reply with human-readable content
- */
-type ParsedNumericReply = ParsedIrcMessage & {
-  command: string; // Will be a numeric code like '001', '002', etc.
-  target: string; // Usually the nickname, first parameter
-  humanReadable: string; // The message meant for display
+export type ParsedUserMessage = {
+  kind: 'user';
+  user: IrcUser;
+  command: string;
+  params: string[];
+  trailing: string;
 };
+
+export type ParsedCommand = {
+  kind: 'command';
+  command: string;
+  params: string[];
+};
+
+export type ParsedIrcMessage = ParsedServerMessage | ParsedUserMessage | ParsedCommand;
 
 export const IrcProtocol = {
   isServerCommand: (data: string): boolean => {
@@ -66,77 +46,82 @@ export const IrcProtocol = {
     return `PONG ${message}\r\n`;
   },
 
-  parseCommand: (message: string): any => {
+  parseCommand: (message: string): ParsedCommand => {
     const parts = message.split(' ');
 
     return {
+      kind: 'command',
       command: parts[0],
-      params: parts.splice(1, parts.length),
+      params: parts.slice(1),
     };
   },
 
-  parseMessage: (message: string): ServerMessageResponse | any => {
-    console.log(`parseMessage: ${message}`);
+  /**
+   * Parse a raw IRC message into a structured object.
+   * Returns null for messages that cannot be parsed.
+   *
+   * IRC message format (RFC 2812):
+   *   [:prefix] command [params] [:trailing]
+   *
+   * Examples:
+   *   PING jme
+   *   :ergo.test 001 jme :Welcome to the ErgoTest IRC Network jme
+   *   :ergo.test 353 jme = #foo :Guest67 jme
+   *   :jme!~u@epmw7nfq4pm9w.irc JOIN #bar
+   *   :Guest67!~u@epmw7nfq4pm9w.irc PRIVMSG #foo3 :Hi there!
+   */
+  parseMessage: (message: string): ParsedIrcMessage | null => {
+    if (IrcProtocol.isServerCommand(message)) {
+      return IrcProtocol.parseCommand(message);
+    }
 
-    // PING jme
-    // :ergo.test 001 jme :Welcome to the ErgoTest IRC Network jme
-    // :ergo.test 004 jme ergo.test ergo-2.16.0-e200e9fd8f13cf46 BERTZios CEIMRUabefhiklmnoqstuv Iabefhkloqv
-    // :ergo.test 005 jme TOPICLEN=390 UTF8ONLY WHOX draft/CHATHISTORY=1000 :are supported by this server
-    // :ergo.test 353 jme = #foo :Guest67 jme
-    // :jme!~u@epmw7nfq4pm9w.irc JOIN #bar
-    // :jme!~u@epmw7nfq4pm9w.irc PART #bar
+    // Extract trailing (text after the last " :" in the message)
+    let trailing = '';
+    let remainder = message;
+    const trailingIndex = message.indexOf(' :');
+    if (trailingIndex !== -1) {
+      trailing = message.substring(trailingIndex + 2);
+      remainder = message.substring(0, trailingIndex);
+    }
 
-    if (IrcProtocol.hasServerHost(message)) {
-      //const host = message.substring(firstColon, message.indexOf(' '));
-      const host = IrcProtocol.parseServerHost(message);
+    // Split: prefix, command, params...
+    const parts = remainder.split(' ');
+    const prefix = parts[0].substring(1); // remove leading ':'
 
-      //const replyCode = message.substring(host.length + 1, message.indexOf(' ', host.length + 2));
-      const replyCode = IrcProtocol.parseReplyCode(message);
+    if (parts.length < 2) {
+      return null;
+    }
 
-      const serverMessage = message.substring(message.indexOf(':', host.length + 2) + 1);
-
-      switch (replyCode) {
-        case '353': {
-          return serverChannelUserList(IrcProtocol.parseChannelUserList(message));
-        }
-      }
-
-      return genericServerMessage( {
-        host,
-        replyCode,
-        serverMessage,
-      })
-
-    } else if (IrcProtocol.hasUser(message)) {
+    // Determine if prefix is a user (nick!user@host) or server host
+    if (prefix.includes('!') && prefix.includes('@')) {
       const user = IrcProtocol.parseUser(message);
 
       if (!user) {
         return null;
       }
 
-      const parts = message.split(' ');
-
-      if (parts.length < 3) {
-        return null;
-      }
-
-      switch (parts[1].toUpperCase()) {
-        case 'JOIN': {
-          const result = IrcProtocol.parseUserChannelJoin(message);
-
-          return result ? serverChannelUserJoin(result) : null;
-        }
-        case 'PART': {
-          // return IrcProtocol.parseUserChannelPart(message);
-          break;
-        }
-      }
-
-      // :jme4!~u@epmw7nfq4pm9w.irc JOIN #foo3
-      // :Guest67!~u@epmw7nfq4pm9w.irc JOIN #foo3
+      return {
+        kind: 'user',
+        user,
+        command: parts[1].toUpperCase(),
+        params: parts.slice(2),
+        trailing,
+      };
     }
 
-    return null;
+    // Server message: :ergo.test 001 jme :Welcome...
+    const command = parts[1];
+    const target = parts.length > 2 ? parts[2] : '';
+    const params = parts.slice(3);
+
+    return {
+      kind: 'server',
+      host: prefix,
+      replyCode: command,
+      target,
+      params,
+      trailing,
+    };
   },
 
   hasServerHost(message: string): boolean {
@@ -147,7 +132,7 @@ export const IrcProtocol = {
     const parts = message.split(' ');
 
     if (parts.length > 0) {
-      if (parts[0].indexOf('@') === -1 && parts[1].indexOf('!') === -1) {
+      if (!parts[0].includes('@') && !parts[0].includes('!')) {
         return true;
       }
     }
@@ -163,7 +148,7 @@ export const IrcProtocol = {
     const parts = message.split(' ');
 
     if (parts.length > 0) {
-      if (parts[0].indexOf('@') !== -1 && parts[0].indexOf('!') !== -1) {
+      if (parts[0].includes('@') && parts[0].includes('!')) {
         return true;
       }
     }
@@ -172,11 +157,10 @@ export const IrcProtocol = {
   },
 
   parseServerHost(message: string): string {
-    const firstColon = message.indexOf(':');
-    return message.substring(firstColon + 1, message.indexOf(' '));
+    return message.substring(1, message.indexOf(' '));
   },
 
-  parseUser(message: string): User | null  {
+  parseUser(message: string): IrcUser | null {
     if (!IrcProtocol.hasUser(message)) {
       return null;
     }
@@ -188,11 +172,10 @@ export const IrcProtocol = {
       nick,
       user,
       host: message.substring(message.indexOf('@') + 1, message.indexOf(' ')),
-    }
+    };
   },
 
-  parseUserChannelJoin(message: string): ChannelJoin | null {
-    // :jme4!~u@epmw7nfq4pm9w.irc JOIN #foo3
+  parseUserChannelJoin(message: string): { user: IrcUser; channel: string } | null {
     if (!IrcProtocol.hasUser(message)) {
       return null;
     }
@@ -210,9 +193,9 @@ export const IrcProtocol = {
     }
 
     return {
-      user: user,
-      channel: parts[2]
-    }
+      user,
+      channel: parts[2],
+    };
   },
 
   parseReplyCode(message: string): string {
@@ -220,43 +203,61 @@ export const IrcProtocol = {
     return message.substring(host.length + 2, message.indexOf(' ', host.length + 2));
   },
 
-  // Reply code: 353
-  parseChannelUserList(message: string) {
+  parseChannelMessage(message: string): { user: IrcUser; channel: string; message: string } | null {
+    if (!IrcProtocol.hasUser(message)) {
+      return null;
+    }
+
+    const user = IrcProtocol.parseUser(message);
+
+    if (!user) {
+      return null;
+    }
+
+    const parts = message.split(' ');
+
+    if (parts.length < 4) {
+      return null;
+    }
+
+    const channelName = parts[2];
+    const channelMessage = message.substring(message.indexOf(':', 1) + 1);
+
+    return {
+      user,
+      channel: channelName,
+      message: channelMessage,
+    };
+  },
+
+  parseChannelUserList(message: string): {
+    host: string;
+    replyCode: string;
+    channelType: string;
+    channel: string;
+    nicks: string[];
+  } {
     // :ergo.test 353 jme = #foo :Guest67 jme
-    const firstColon = message.indexOf(':');
     const host = IrcProtocol.parseServerHost(message);
-    //const replyCode = message.substring(host.length + 1, message.indexOf(' ', host.length + 2));
     const replyCode = IrcProtocol.parseReplyCode(message);
-    const nick = message.substring(
-      firstColon + host.length + 2 + replyCode.length,
-      message.indexOf(' ', firstColon + host.length + 2 + replyCode.length),
-    );
 
-    const rest = message.substring(
-      firstColon + host.length + 2 + replyCode.length + nick.length + 1,
-    );
+    // After ":host replyCode target " we have "= #channel :nicks..."
+    // Find the part after the target (nickname)
+    const parts = message.split(' ');
+    // parts[0] = :ergo.test, parts[1] = 353, parts[2] = jme, parts[3] = =, parts[4] = #foo, parts[5...] = :nicks
+    const channelType = parts[3];
+    const channel = parts[4];
 
-    const channelType = rest.substring(0, 1);
-
-    const channel = rest.substring(2, rest.indexOf(' ', channelType.length + 1));
-
-    const nicks = rest.substring(rest.indexOf(':') + 1).split(' ');
+    // Extract nicks from trailing (after the last ':')
+    const trailingStart = message.indexOf(':', 1);
+    const nicks = trailingStart !== -1 ? message.substring(trailingStart + 1).split(' ') : [];
 
     return {
       host,
       replyCode,
-      nick,
-      rest,
       channelType,
       channel,
       nicks,
     };
-
-    /*
-       '=': public channel
-       '@': secret channel
-       '*': private channel
-     */
-    //const channelType
   },
 };

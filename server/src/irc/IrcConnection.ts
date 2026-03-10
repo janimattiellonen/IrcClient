@@ -1,7 +1,7 @@
 import { TcpClient } from './TcpClient';
 import { IrcProtocol } from './IrcProtocol';
-import { genericServerMessage, serverChannelUserJoin, serverChannelUserList } from '../messages/serverMessages';
-import { AppMessage } from 'shared/messageTypes';
+import { toServerEvent } from './MessageFactory';
+import type { ServerEvent } from 'shared/protocol';
 
 export type IrcConnectionConfig = {
   host: string;
@@ -11,7 +11,7 @@ export type IrcConnectionConfig = {
 
 type IrcConnectionEvents = {
   onRegistered: () => void;
-  onMessage: (raw: string, parsed: AppMessage) => void;
+  onMessage: (raw: string, parsed: ServerEvent) => void;
   onError: (error: Error) => void;
   onDisconnect: () => void;
 };
@@ -33,18 +33,12 @@ export class IrcConnection {
         this.sendUser(this.config.nickname);
       },
       onData: (data: Buffer) => {
-        // https://www.ietf.org/rfc/rfc1459.txt
-        // https://datatracker.ietf.org/doc/html/rfc2812
-        console.log(`IrcConnection, onData, start`);
-
         const lines = data.toString().split('\r\n');
 
         for (const line of lines) {
           if (!line) {
             continue;
           }
-
-          console.log(`IrcConnection, onData: ${line}`);
 
           this.handleIrcMessage(line, events);
         }
@@ -58,47 +52,28 @@ export class IrcConnection {
     this.tcpClient.send(`JOIN ${channel}\r\n`);
   }
 
+  sendMessage(channel: string, message: string) {
+    this.tcpClient.send(`PRIVMSG ${channel} :${message}\r\n`);
+  }
+
   private handleIrcMessage(raw: string, events: IrcConnectionEvents) {
-    console.log(`handleIrcMessage, raw: ${JSON.stringify(raw, null, 2)}`);
+    const parsed = IrcProtocol.parseMessage(raw);
 
-    if (IrcProtocol.isServerCommand(raw)) {
-      const parsed = IrcProtocol.parseCommand(raw);
+    if (!parsed) {
+      return;
+    }
 
-      console.log(`handleIrcMessage, command, parsed: ${JSON.stringify(parsed, null, 2)}`);
+    // Handle PING internally
+    if (parsed.kind === 'command' && parsed.command === 'PING') {
+      this.sendPong(parsed.params[0]);
+      return;
+    }
 
-      if (parsed.command === 'PING') {
-        this.sendPong(parsed.params[0]);
-      }
-    } else {
-      const message = IrcProtocol.parseMessage(raw);
+    // Convert to ServerEvent and forward to client
+    const serverEvent = toServerEvent(parsed, raw);
 
-      if (!message) {
-        return;
-      }
-      events.onMessage(raw, message);
-
-
-      // OLD CODE
-      /*
-      const parsed = IrcProtocol.parseMessage(raw);
-      console.log(`handleIrcMessage, message, parsed: ${JSON.stringify(parsed, null, 2)}`);
-
-      if (parsed.replyCode !== null) {
-        switch (parsed.replyCode) {
-          case '353': {
-            events.onMessage(raw, serverChannelUserList(parsed));
-            break;
-          }
-          default: {
-            events.onMessage(raw, genericServerMessage(parsed));
-            break;
-          }
-        }
-      } else {
-        // TODO: need to add "type check" here
-        events.onMessage(raw, serverChannelUserJoin(parsed));
-      }
-      */
+    if (serverEvent) {
+      events.onMessage(raw, serverEvent);
     }
   }
 

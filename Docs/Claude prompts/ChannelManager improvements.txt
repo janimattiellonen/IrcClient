@@ -1,0 +1,114 @@
+ In file client/src/utils/ChannelManager.ts
+
+I need a way to add, remove and edit users in a given channel object.
+
+See types Channel and User to see the relationship between users and
+channel.
+
+When adding, editing or removing users regarding a specific channel, the
+following information is needed:
+- a user object of type User
+- channel name
+
+suggest a solution
+
+⏺ I'll examine the current structure of the ChannelManager and the relevant
+  types to suggest a solution for managing users within channels.
+
+⏺ Read(client/src/utils/ChannelManager.ts)
+  ⎿  Read 84 lines
+
+⏺ Search(pattern: "type (Channel|User)", output_mode: "content")
+  ⎿  Found 14 lines (ctrl+o to expand)
+
+⏺ Now I can see the structure. Let me suggest a solution for managing users
+  in channels:
+
+  Suggested Solution
+
+  I recommend adding three methods to the ChannelManager class for user
+  management:
+
+  1. addUserToChannel(channelName: string, user: User): void
+
+  - Adds a user to a channel's user list
+  - Should check if the channel exists
+  - Should check if the user already exists in the channel (to avoid
+  duplicates)
+
+  2. removeUserFromChannel(channelName: string, userNick: string): void
+
+  - Removes a user from a channel's user list
+  - Should check if the channel exists
+  - Uses userNick as the identifier since nick is the unique identifier in
+  IRC
+
+  3. updateUserInChannel(channelName: string, oldNick: string, updatedUser:
+  User): void
+
+  - Updates a user's information in a channel (useful for nick changes, mode
+   changes, etc.)
+  - Should check if the channel exists
+  - Should check if the old user exists
+
+  Implementation would look like:
+
+  addUserToChannel(channelName: string, user: User): void {
+    const channel = this.channels[channelName];
+    if (!channel) {
+      throw new Error(`Channel ${channelName} does not exist`);
+    }
+
+    const userExists = channel.users.some(u => u.nick === user.nick);
+    if (userExists) {
+      throw new Error(`User ${user.nick} already exists in channel
+  ${channelName}`);
+    }
+
+    channel.users.push(user);
+  }
+
+  removeUserFromChannel(channelName: string, userNick: string): void {
+    const channel = this.channels[channelName];
+    if (!channel) {
+      throw new Error(`Channel ${channelName} does not exist`);
+    }
+
+    const userIndex = channel.users.findIndex(u => u.nick === userNick);
+    if (userIndex === -1) {
+      throw new Error(`User ${userNick} not found in channel
+  ${channelName}`);
+    }
+
+    channel.users.splice(userIndex, 1);
+  }
+
+  updateUserInChannel(channelName: string, oldNick: string, updatedUser:
+  User): void {
+    const channel = this.channels[channelName];
+    if (!channel) {
+      throw new Error(`Channel ${channelName} does not exist`);
+    }
+
+    const userIndex = channel.users.findIndex(u => u.nick === oldNick);
+    if (userIndex === -1) {
+      throw new Error(`User ${oldNick} not found in channel
+  ${channelName}`);
+    }
+
+    channel.users[userIndex] = updatedUser;
+  }
+
+  Additional consideration:
+
+  You might also want to export the User type since it's currently not
+  exported. This would allow other parts of the application to use it:
+
+  export type User = {
+    nick: string;
+    user: string;
+    host: string;
+  }
+
+  Would you like me to implement this solution? Or do you have any
+  modifications you'd like to make to this approach?

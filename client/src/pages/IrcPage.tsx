@@ -1,14 +1,14 @@
 import { handleInput } from '../utils/input-handler.ts';
 import { useSocketContext } from '../hooks/useSocketContext.ts';
+import { useIrcChannelContext } from '../hooks/useIrcChannelContext.ts';
 import { IrcView } from '../views/IrcView.tsx';
 
 export const IrcPage = () => {
   const { sendMessage, responses } = useSocketContext();
+  const { activeChannel } = useIrcChannelContext();
 
   function onInput(message: string): void {
-    console.log(`foo, message: ${message}`);
-
-    handleInput(message, sendMessage);
+    handleInput(message, sendMessage, activeChannel?.name ?? null);
   }
 
   return (

@@ -1,26 +1,36 @@
 import './IrcView.css';
 import { Input } from '../components/Input.tsx';
-//import type { MessageResponse } from '../contexts/SocketContextDefinition.ts';
 import { ChannelBar } from '../components/channels/ChannelBar.tsx';
-import type { AppMessage } from 'shared/messageTypes.ts';
+import { useIrcChannelContext } from '../hooks/useIrcChannelContext.ts';
+import type { ServerEvent } from '../../../shared/protocol';
+import type { ChannelMessage } from '../utils/ChannelManager.ts';
 
 type IrcViewProps = {
   handleInput: (message: string) => void;
-  messages: AppMessage[];
+  messages: ServerEvent[];
 };
 
-
-function renderMessage(message : AppMessage) {
-  console.log(`renderMessage: ${JSON.stringify(message, null,2 )}`);
+function renderGenericMessage(message: ServerEvent) {
   if (message.type === 'SERVER_MESSAGE_GENERIC_MESSAGE') {
-    return <span>{message.payload.message}</span>
+    return <span>{message.payload.message}</span>;
   }
 
-  return '';
+  return null;
+}
+
+function renderChannelMessage(message: ChannelMessage) {
+  return (
+    <span>
+      <strong>{message.source}</strong>: {message.message}
+    </span>
+  );
 }
 
 export function IrcView({ handleInput, messages }: IrcViewProps) {
-  console.log(`MESSAGES: ${JSON.stringify(messages,null,2)}`);
+  const { activeChannel } = useIrcChannelContext();
+
+  const isConsole = !activeChannel || activeChannel.name === 'Console';
+
   return (
     <div className={'irc-view'}>
       <div className={'irc-view-channel-bar'}>
@@ -29,10 +39,13 @@ export function IrcView({ handleInput, messages }: IrcViewProps) {
 
       <div className={'irc-view-content'}>
         <div className={'irc-view-output'}>
-          OUTPUT
-          {messages.map((message, i) => (
-            <p key={i}>{renderMessage(message)}</p>
-          ))}
+          {isConsole
+            ? messages.map((message, i) => (
+                <p key={i}>{renderGenericMessage(message)}</p>
+              ))
+            : activeChannel.messages.map((message) => (
+                <p key={message.id}>{renderChannelMessage(message)}</p>
+              ))}
         </div>
 
         <div className={'irc-view-input'}>

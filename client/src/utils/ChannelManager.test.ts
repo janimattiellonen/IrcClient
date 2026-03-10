@@ -13,6 +13,7 @@ describe('ChannelManager', () => {
       '#foo': {
         name: '#foo',
         messages: [],
+        users: [],
       },
     };
 
@@ -26,6 +27,7 @@ describe('ChannelManager', () => {
     channelManager['activeChannel'] = {
       name: '#foo',
       messages: [],
+      users: [],
     };
 
     const activeChannel = channelManager.getActiveChannel();
@@ -38,6 +40,7 @@ describe('ChannelManager', () => {
     const channel = {
       name: '#foo',
       messages: [],
+      users: [],
     };
 
     channelManager.addChannel(channel);
@@ -49,6 +52,7 @@ describe('ChannelManager', () => {
     const channel = {
       name: '#foo',
       messages: [],
+      users: [],
     };
 
     channelManager.addChannel(channel);
@@ -63,6 +67,7 @@ describe('ChannelManager', () => {
       '#foo': {
         name: '#foo',
         messages: [],
+        users: [],
       },
     };
 
@@ -77,10 +82,12 @@ describe('ChannelManager', () => {
       '#foo': {
         name: '#foo',
         messages: [],
+        users: [],
       },
       '#bar': {
         name: '#bar',
         messages: [],
+        users: [],
       },
     };
 
@@ -97,6 +104,7 @@ describe('ChannelManager', () => {
       '#foo': {
         name: '#foo',
         messages: [],
+        users: [],
       },
     };
 
@@ -110,6 +118,7 @@ describe('ChannelManager', () => {
       '#foo': {
         name: '#foo',
         messages: [],
+        users: [],
       },
     };
 
@@ -123,6 +132,7 @@ describe('ChannelManager', () => {
       '#foo': {
         name: '#foo',
         messages: [],
+        users: [],
       },
     };
 

@@ -6,7 +6,7 @@ export type ChannelMessage = {
   message: string;
 };
 
-type User = {
+export type User = {
   nick: string;
   user: string;
   host: string;
@@ -48,6 +48,10 @@ export class ChannelManager {
     return channel;
   }
 
+  clearActiveChannel(): void {
+    this.activeChannel = null;
+  }
+
   /**
    * @param channel
    * @return void
@@ -78,6 +82,15 @@ export class ChannelManager {
       throw new Error(`Channel ${channelName} does not exist`);
     }
 
+    // React state might not see this change
     delete this.channels[channelName];
+
+    const channels = this.getChannels();
+
+    if (channels.length > 0) {
+      this.setActiveChannel(channels[0].name);
+    } else {
+      this.clearActiveChannel();
+    }
   }
 }

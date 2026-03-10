@@ -1,12 +1,12 @@
 import {
-  type GenericMessagePayload,
   type JoinChannelPayload,
   type LoginPayload,
   type Message,
-  MESSAGE_GENERIC_MESSAGE,
+  type SendMessagePayload,
   MESSAGE_JOIN_CHANNEL,
   MESSAGE_LOGIN,
-} from '../../../shared/messageTypes.ts';
+  MESSAGE_SEND_MESSAGE,
+} from '../../../shared/protocol';
 
 export function loginMessage(
   nickname: string,
@@ -28,11 +28,12 @@ export function joinChannelMessage(
   };
 }
 
-export function genericMessage(
+export function sendMessageMessage(
+  channel: string,
   message: string
-): Message<typeof MESSAGE_GENERIC_MESSAGE, GenericMessagePayload> {
+): Message<typeof MESSAGE_SEND_MESSAGE, SendMessagePayload> {
   return {
-    type: MESSAGE_GENERIC_MESSAGE,
-    payload: { message },
+    type: MESSAGE_SEND_MESSAGE,
+    payload: { channel, message },
   };
 }
