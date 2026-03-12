@@ -16,9 +16,11 @@ export const IrcPage = () => {
       <h1
         style={{
           margin: 0,
-          padding: '20px',
-          backgroundColor: '#333',
-          color: 'white',
+          padding: '12px 20px',
+          backgroundColor: 'var(--bg-dark)',
+          color: 'var(--text-bright)',
+          fontSize: '1.4em',
+          borderBottom: '1px solid var(--border-subtle)',
           flexShrink: 0,
         }}
       >

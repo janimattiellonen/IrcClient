@@ -10,8 +10,8 @@
   height: 90%;
   min-height: 300px;
   width: 100%;
-  background: #cfcbcb;
-  color: black;
+  background: var(--bg-medium);
+  color: var(--text-primary);
 }
 
 .console-main .console-input {

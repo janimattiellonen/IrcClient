@@ -100,14 +100,16 @@ function LoginForm() {
             width: '100%',
             padding: '10px',
             fontSize: '16px',
-            border: errors.nickname ? '2px solid #cc0000' : '1px solid #ccc',
+            border: errors.nickname ? '2px solid var(--accent-error)' : '1px solid var(--border-default)',
             borderRadius: '4px',
             boxSizing: 'border-box',
+            backgroundColor: 'var(--bg-light)',
+            color: 'var(--text-primary)',
           }}
           placeholder="Enter your nickname"
         />
         {errors.nickname && (
-          <span style={{ color: '#cc0000', fontSize: '14px', marginTop: '4px', display: 'block' }}>
+          <span style={{ color: 'var(--accent-error)', fontSize: '14px', marginTop: '4px', display: 'block' }}>
             {errors.nickname.message}
           </span>
         )}
@@ -130,9 +132,11 @@ function LoginForm() {
             width: '100%',
             padding: '10px',
             fontSize: '16px',
-            border: errors.serverAddress ? '2px solid #cc0000' : '1px solid #ccc',
+            border: errors.serverAddress ? '2px solid var(--accent-error)' : '1px solid var(--border-default)',
             borderRadius: '4px',
             boxSizing: 'border-box',
+            backgroundColor: 'var(--bg-light)',
+            color: 'var(--text-primary)',
           }}
           placeholder="localhost"
         />
@@ -151,15 +155,17 @@ function LoginForm() {
             width: '100%',
             padding: '10px',
             fontSize: '16px',
-            border: errors.port ? '2px solid #cc0000' : '1px solid #ccc',
+            border: errors.port ? '2px solid var(--accent-error)' : '1px solid var(--border-default)',
             borderRadius: '4px',
             boxSizing: 'border-box',
+            backgroundColor: 'var(--bg-light)',
+            color: 'var(--text-primary)',
           }}
           placeholder="6667"
         />
 
         {errors.port && (
-          <span style={{ color: '#cc0000', fontSize: '14px', marginTop: '4px', display: 'block' }}>
+          <span style={{ color: 'var(--accent-error)', fontSize: '14px', marginTop: '4px', display: 'block' }}>
             {errors.port.message}
           </span>
         )}
@@ -173,7 +179,7 @@ function LoginForm() {
           padding: '12px',
           fontSize: '16px',
           fontWeight: 'bold',
-          backgroundColor: isSubmitting ? '#999' : '#0066cc',
+          backgroundColor: isSubmitting ? 'var(--bg-elevated)' : 'var(--accent-primary)',
           color: 'white',
           border: 'none',
           borderRadius: '4px',
@@ -190,7 +196,7 @@ export function LoginPage() {
   return (
     <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
       <h1>Connect to IRC Server</h1>
-      <p style={{ color: '#666', marginBottom: '30px' }}>
+      <p style={{ color: 'var(--text-secondary)', marginBottom: '30px' }}>
         Enter your nickname and server address to connect.
       </p>
       <LoginForm />

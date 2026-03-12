@@ -18,7 +18,7 @@ export function Input({ handleInput }: InputProps) {
 
   return (
     <input
-      style={{ width: '100%', backgroundColor: 'transparent' }}
+      style={{ width: '100%', backgroundColor: 'transparent', color: 'var(--text-primary)', border: 'none', outline: 'none', padding: '8px', fontSize: '14px' }}
       value={value}
       onChange={(e) => setValue(e.target.value)}
       onKeyDown={handleKeyDown}

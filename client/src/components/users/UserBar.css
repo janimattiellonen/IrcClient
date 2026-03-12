@@ -1,0 +1,22 @@
+.user-bar {
+  flex-shrink: 0;
+  width: 160px;
+  background: var(--bg-dark);
+  color: var(--text-secondary);
+  overflow-y: auto;
+  padding: 8px;
+  border-left: 1px solid var(--border-subtle);
+}
+
+.user-bar-title {
+  font-weight: bold;
+  color: var(--text-bright);
+  margin-bottom: 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.user-bar-nick {
+  padding: 2px 0;
+  font-size: 14px;
+}

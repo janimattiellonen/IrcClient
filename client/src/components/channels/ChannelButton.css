@@ -2,12 +2,13 @@
   display: flex;
   align-items: center;
   position: relative;
-  color: black;
-  border: solid 1px black;
-  border-radius: 10px;
-  padding: 4px;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  padding: 6px 8px;
   cursor: pointer;
-  background: white;
+  background: var(--bg-dark);
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
 }
 
 .channel .name {
@@ -16,25 +17,29 @@
 }
 
 .channel.active {
-  color: red;
+  color: var(--accent-primary);
+  background: var(--bg-light);
+  border-color: var(--accent-primary);
 }
 
 .channel:hover {
-  background: #1f1f1f;
-  color: white;
+  background: var(--bg-elevated);
+  color: var(--text-bright);
+  border-color: var(--border-default);
 }
 
 .channel.active:hover {
-  color: red;
+  color: var(--accent-primary);
 }
 
 .channel.unread {
   font-weight: bold;
-  color: #ff6600;
+  color: var(--accent-warning);
+  border-color: var(--accent-warning);
 }
 
 .channel.unread:hover {
-  color: #ff6600;
+  color: var(--accent-warning);
 }
 
 .channel-indicators {
@@ -49,7 +54,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background-color: #ff6600;
+  background-color: var(--accent-warning);
   flex-shrink: 0;
 }
 
@@ -59,6 +64,8 @@
   opacity: 0;
   cursor: pointer;
   padding: 0 2px;
+  color: var(--text-dim);
+  transition: opacity 0.15s;
 }
 
 .channel:hover .channel-close {
@@ -67,4 +74,5 @@
 
 .channel-close:hover {
   opacity: 1 !important;
+  color: var(--accent-error);
 }
