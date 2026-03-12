@@ -9,3 +9,21 @@ The attached image shows the current layout (relevant parts):
 
 Add a slot for the user bar. I'd like to have it on the right side of the window. It should be contained in the 
 same area as the area colored in red.
+
+
+## Context menu
+
+Enter plan mode.
+
+Certain channel user based actions would benefit from a context menu. For example, if I want to kick a user, 
+give a user channel operator rights, send private message etc, I would select a user, and select a wanted action 
+from the context menu.
+
+## Implementation
+
+I don't want to create an own context menu. I'd rather use an existing component. Suggest a modern npm package that 
+provides an accessible context menu and preferrably other accessible ui comkponents that we may have use for later
+on
+
+## Initial (dummy) context menu
+

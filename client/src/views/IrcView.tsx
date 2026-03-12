@@ -1,10 +1,12 @@
 import './IrcView.css';
+import { useCallback } from 'react';
 import { Input } from '../components/Input.tsx';
 import { ChannelBar } from '../components/channels/ChannelBar.tsx';
 import { UserBar } from '../components/users/UserBar.tsx';
+import type { UserAction } from '../components/users/UserContextMenu.tsx';
 import { useIrcChannelContext } from '../hooks/useIrcChannelContext.ts';
 import type { TimestampedEvent } from '../contexts/SocketContextDefinition.ts';
-import type { ChannelMessage } from '../utils/ChannelManager.ts';
+import type { ChannelMessage, User } from '../utils/ChannelManager.ts';
 import { formatTimestamp } from '../utils/formatTimestamp.ts';
 
 type IrcViewProps = {
@@ -33,6 +35,11 @@ export function IrcView({ handleInput, messages }: IrcViewProps) {
 
   const isConsole = !activeChannel || activeChannel.name === 'Console';
 
+  const handleUserAction = useCallback((action: UserAction, user: User) => {
+    console.log(`User action: ${action} on ${user.nick}`);
+    // TODO: wire up to IRC commands once protocol support is added
+  }, []);
+
   return (
     <div className={'irc-view'}>
       <div className={'irc-view-channel-bar'}>
@@ -55,7 +62,7 @@ export function IrcView({ handleInput, messages }: IrcViewProps) {
                 ))}
           </div>
 
-          {!isConsole && <UserBar users={activeChannel.users} />}
+          {!isConsole && <UserBar users={activeChannel.users} onUserAction={handleUserAction} />}
         </div>
 
         <div className={'irc-view-input'}>
