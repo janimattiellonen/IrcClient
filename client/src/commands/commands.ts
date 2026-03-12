@@ -1,9 +1,11 @@
 import {
   type Command,
   type JoinPayload,
+  type PartPayload,
   type PrivMsgPayload,
   type InvalidCommand,
   COMMAND_JOIN,
+  COMMAND_PART,
   COMMAND_PRIVMSG,
 } from '../../../shared/commandTypes.ts';
 
@@ -13,6 +15,18 @@ export function joinCommand(
 ): Command<typeof COMMAND_JOIN, JoinPayload> {
   return {
     type: COMMAND_JOIN,
+    payload: { channel },
+    originalInput,
+    isValid: channel !== null,
+  };
+}
+
+export function partCommand(
+  channel: string | null,
+  originalInput: string
+): Command<typeof COMMAND_PART, PartPayload> {
+  return {
+    type: COMMAND_PART,
     payload: { channel },
     originalInput,
     isValid: channel !== null,

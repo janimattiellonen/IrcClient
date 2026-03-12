@@ -4,6 +4,8 @@ import {
   serverChannelUserList,
   serverChannelUserJoin,
   serverChannelUserMessage,
+  serverChannelUserPart,
+  serverChannelTopic,
   genericServerMessage,
   serverError,
 } from '../messages/serverMessages';
@@ -31,6 +33,11 @@ export function toServerEvent(parsed: ParsedIrcMessage, raw: string): ServerEven
       }
 
       switch (parsed.replyCode) {
+        case '332': {
+          const channel = parsed.params[0];
+          const topic = parsed.trailing || parsed.params.slice(1).join(' ');
+          return serverChannelTopic({ channel, topic });
+        }
         case '353': {
           const userList = IrcProtocol.parseChannelUserList(raw);
           return serverChannelUserList(userList);
@@ -54,9 +61,14 @@ export function toServerEvent(parsed: ParsedIrcMessage, raw: string): ServerEven
           const result = IrcProtocol.parseChannelMessage(raw);
           return result ? serverChannelUserMessage(result) : null;
         }
+        case 'TOPIC': {
+          const channel = parsed.params[0];
+          const topic = parsed.trailing || parsed.params.slice(1).join(' ');
+          return serverChannelTopic({ channel, topic, changedBy: parsed.user.nick });
+        }
         case 'PART': {
-          // TODO: implement PART handling
-          return null;
+          const channel = parsed.params[0];
+          return serverChannelUserPart({ channel, user: parsed.user });
         }
         default:
           return null;

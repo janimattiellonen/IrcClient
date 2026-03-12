@@ -6,10 +6,14 @@ export type Command<T extends string, P> = {
 };
 
 export const COMMAND_JOIN = 'JOIN';
+export const COMMAND_PART = 'PART';
 export const COMMAND_PRIVMSG = 'PRIVMSG';
-// Add more commands as needed
 
 export type JoinPayload = {
+  channel: string | null;
+};
+
+export type PartPayload = {
   channel: string | null;
 };
 
@@ -20,8 +24,8 @@ export type PrivMsgPayload = {
 
 export type CommandRegistry = {
   [COMMAND_JOIN]: JoinPayload;
+  [COMMAND_PART]: PartPayload;
   [COMMAND_PRIVMSG]: PrivMsgPayload;
-  // Add new commands here
 };
 
 export type IrcCommand = {

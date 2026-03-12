@@ -1,5 +1,5 @@
 import type { IrcCommand, InvalidCommand } from '../../../shared/commandTypes.ts';
-import { joinCommand, privMsgCommand, invalidCommand } from '../commands/commands.ts';
+import { joinCommand, partCommand, privMsgCommand, invalidCommand } from '../commands/commands.ts';
 
 export function isIrcCommand(input: string): boolean {
   const trimmed = input.trim();
@@ -18,11 +18,22 @@ export function parseIrcCommand(rawInput: string): IrcCommand | InvalidCommand {
     return parseJoin(input);
   }
 
+  if (input.toUpperCase().startsWith('/PART')) {
+    return parsePart(input);
+  }
+
   if (input.toUpperCase().startsWith('/PRIVMSG')) {
     return parsePrivMsg(input);
   }
 
   return invalidCommand(rawInput);
+}
+
+function parsePart(input: string): IrcCommand | InvalidCommand {
+  const hashIndex = input.indexOf('#');
+  const channel = hashIndex !== -1 ? input.substring(hashIndex).trim() : null;
+
+  return partCommand(channel, input);
 }
 
 function parsePrivMsg(input: string): IrcCommand | InvalidCommand {

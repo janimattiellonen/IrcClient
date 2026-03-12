@@ -14,6 +14,7 @@ export function IrcChannelProvider({ children }: IrcChannelProviderProps) {
   // React state to trigger re-renders
   const [channels, setChannels] = useState<Channel[]>([]);
   const [activeChannel, setActiveChannelState] = useState<Channel | null>(null);
+  const [channelsWithUnread, setChannelsWithUnread] = useState<Set<string>>(new Set());
 
   // Wrapper method: Add channel
   const addChannel = useCallback(
@@ -48,6 +49,23 @@ export function IrcChannelProvider({ children }: IrcChannelProviderProps) {
     [channelManager]
   );
 
+  const setChannelUsers = useCallback(
+    (nicks: string[], channelName: string) => {
+      const channel = channelManager.getChannel(channelName);
+
+      if (channel) {
+        channel.users = nicks.map((nick) => ({ nick, user: '', host: '' }));
+        setChannels([...channelManager.getChannels()]);
+
+        const active = channelManager.getActiveChannel();
+        if (active && active.name === channelName) {
+          setActiveChannelState({ ...active });
+        }
+      }
+    },
+    [channelManager]
+  );
+
   const addMessageToChannel = useCallback(
     (message: ChannelMessage, channelName: string) => {
       const channel = channelManager.getChannel(channelName);
@@ -57,6 +75,42 @@ export function IrcChannelProvider({ children }: IrcChannelProviderProps) {
         setChannels([...channelManager.getChannels()]);
 
         // Keep activeChannel state in sync if message is for the active channel
+        const active = channelManager.getActiveChannel();
+        if (active && active.name === channelName) {
+          setActiveChannelState({ ...active });
+        } else {
+          setChannelsWithUnread((prev) => new Set(prev).add(channelName));
+        }
+      }
+    },
+    [channelManager]
+  );
+
+  const setChannelTopic = useCallback(
+    (topic: string, channelName: string) => {
+      const channel = channelManager.getChannel(channelName);
+
+      if (channel) {
+        channel.topic = topic;
+        setChannels([...channelManager.getChannels()]);
+
+        const active = channelManager.getActiveChannel();
+        if (active && active.name === channelName) {
+          setActiveChannelState({ ...active });
+        }
+      }
+    },
+    [channelManager]
+  );
+
+  const removeUserFromChannel = useCallback(
+    (nick: string, channelName: string) => {
+      const channel = channelManager.getChannel(channelName);
+
+      if (channel) {
+        channel.users = channel.users.filter((u) => u.nick !== nick);
+        setChannels([...channelManager.getChannels()]);
+
         const active = channelManager.getActiveChannel();
         if (active && active.name === channelName) {
           setActiveChannelState({ ...active });
@@ -83,6 +137,12 @@ export function IrcChannelProvider({ children }: IrcChannelProviderProps) {
     (channelName: string) => {
       const channel = channelManager.setActiveChannel(channelName);
       setActiveChannelState(channel);
+      setChannelsWithUnread((prev) => {
+        if (!prev.has(channelName)) return prev;
+        const next = new Set(prev);
+        next.delete(channelName);
+        return next;
+      });
     },
     [channelManager]
   );
@@ -98,12 +158,16 @@ export function IrcChannelProvider({ children }: IrcChannelProviderProps) {
   const value: IrcChannelContextType = {
     channels,
     activeChannel,
+    channelsWithUnread,
     addChannel,
     addUserToChannel,
+    setChannelUsers,
     removeChannel,
     setActiveChannel,
     getChannel,
-    addMessageToChannel
+    addMessageToChannel,
+    setChannelTopic,
+    removeUserFromChannel
   };
 
   return <IrcChannelContext.Provider value={value}>{children}</IrcChannelContext.Provider>;

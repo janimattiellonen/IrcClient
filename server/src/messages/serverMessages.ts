@@ -1,13 +1,17 @@
 import {
+  type ChannelTopicPayload,
   type ChannelUserJoinPayload,
   type ChannelUserListPayload,
   type ChannelUserMessagePayload,
+  type ChannelUserPartPayload,
   type ErrorPayload,
   type GenericServerMessagePayload,
   type Message,
+  SERVER_MESSAGE_CHANNEL_TOPIC,
   SERVER_MESSAGE_CHANNEL_USER_JOIN,
   SERVER_MESSAGE_CHANNEL_USER_LIST,
   SERVER_MESSAGE_CHANNEL_USER_MESSAGE,
+  SERVER_MESSAGE_CHANNEL_USER_PART,
   SERVER_MESSAGE_ERROR,
   SERVER_MESSAGE_GENERIC_MESSAGE,
 } from 'shared/protocol';
@@ -60,6 +64,29 @@ export function serverChannelUserJoin(
   };
 }
 
+type ServerChannelUserPartProps = {
+  channel: string;
+  user: {
+    user: string;
+    nick: string;
+    host: string;
+  };
+};
+
+export function serverChannelUserPart(
+  params: ServerChannelUserPartProps,
+): Message<typeof SERVER_MESSAGE_CHANNEL_USER_PART, ChannelUserPartPayload> {
+  const { channel, user } = params;
+
+  return {
+    type: SERVER_MESSAGE_CHANNEL_USER_PART,
+    payload: {
+      channel,
+      user
+    },
+  };
+}
+
 type ServerChannelUserMessageProps = {
   channel: string;
   user: {
@@ -82,6 +109,25 @@ export function serverChannelUserMessage(
       channel,
       user,
       message
+    },
+  };
+}
+
+type ServerChannelTopicProps = {
+  channel: string;
+  topic: string;
+  changedBy?: string;
+};
+
+export function serverChannelTopic(
+  params: ServerChannelTopicProps,
+): Message<typeof SERVER_MESSAGE_CHANNEL_TOPIC, ChannelTopicPayload> {
+  return {
+    type: SERVER_MESSAGE_CHANNEL_TOPIC,
+    payload: {
+      channel: params.channel,
+      topic: params.topic,
+      changedBy: params.changedBy,
     },
   };
 }

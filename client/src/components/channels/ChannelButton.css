@@ -1,10 +1,18 @@
 .channel {
+  display: flex;
+  align-items: center;
+  position: relative;
   color: black;
   border: solid 1px black;
   border-radius: 10px;
   padding: 4px;
   cursor: pointer;
   background: white;
+}
+
+.channel .name {
+  flex: 1;
+  text-align: center;
 }
 
 .channel.active {
@@ -18,4 +26,45 @@
 
 .channel.active:hover {
   color: red;
+}
+
+.channel.unread {
+  font-weight: bold;
+  color: #ff6600;
+}
+
+.channel.unread:hover {
+  color: #ff6600;
+}
+
+.channel-indicators {
+  position: absolute;
+  right: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.unread-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #ff6600;
+  flex-shrink: 0;
+}
+
+.channel-close {
+  font-size: 14px;
+  line-height: 1;
+  opacity: 0;
+  cursor: pointer;
+  padding: 0 2px;
+}
+
+.channel:hover .channel-close {
+  opacity: 0.6;
+}
+
+.channel-close:hover {
+  opacity: 1 !important;
 }

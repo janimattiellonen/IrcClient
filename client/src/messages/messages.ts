@@ -2,9 +2,11 @@ import {
   type JoinChannelPayload,
   type LoginPayload,
   type Message,
+  type PartChannelPayload,
   type SendMessagePayload,
   MESSAGE_JOIN_CHANNEL,
   MESSAGE_LOGIN,
+  MESSAGE_PART_CHANNEL,
   MESSAGE_SEND_MESSAGE,
 } from '../../../shared/protocol';
 
@@ -24,6 +26,15 @@ export function joinChannelMessage(
 ): Message<typeof MESSAGE_JOIN_CHANNEL, JoinChannelPayload> {
   return {
     type: MESSAGE_JOIN_CHANNEL,
+    payload: { channel },
+  };
+}
+
+export function partChannelMessage(
+  channel: string
+): Message<typeof MESSAGE_PART_CHANNEL, PartChannelPayload> {
+  return {
+    type: MESSAGE_PART_CHANNEL,
     payload: { channel },
   };
 }

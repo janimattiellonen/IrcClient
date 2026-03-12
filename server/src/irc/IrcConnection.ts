@@ -56,6 +56,10 @@ export class IrcConnection {
     this.tcpClient.send(`PRIVMSG ${channel} :${message}\r\n`);
   }
 
+  partChannel(channel: string) {
+    this.tcpClient.send(`PART ${channel}\r\n`);
+  }
+
   private handleIrcMessage(raw: string, events: IrcConnectionEvents) {
     const parsed = IrcProtocol.parseMessage(raw);
 

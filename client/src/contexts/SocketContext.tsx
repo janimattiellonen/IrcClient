@@ -5,8 +5,10 @@ import type { ServerEvent } from '../../../shared/protocol';
 import {
   SocketContext,
   type SocketContextType,
+  type TimestampedEvent,
 } from './SocketContextDefinition';
 import { useIrcChannelContext } from '../hooks/useIrcChannelContext.ts';
+import { useIrcSessionContext } from '../hooks/useIrcSessionContext.ts';
 import { useMessageRouter } from '../hooks/useMessageRouter.ts';
 
 type SocketProviderProps = {
@@ -16,16 +18,20 @@ type SocketProviderProps = {
 export const SocketProvider = ({ children }: SocketProviderProps) => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
-  const [responses, setResponses] = useState<ServerEvent[]>([]);
+  const [responses, setResponses] = useState<TimestampedEvent[]>([]);
   const { addChannel } = useIrcChannelContext();
+  const { nickname } = useIrcSessionContext();
+  const nicknameRef = { current: nickname };
+  nicknameRef.current = nickname;
 
   const { attachToSocket } = useMessageRouter({
     onGenericMessage: (event: ServerEvent) => {
-      setResponses((prev) => [...prev, event]);
+      setResponses((prev) => [...prev, { event, timestamp: new Date() }]);
     },
     onError: (code, message) => {
       console.error(`IRC error${code ? ` (${code})` : ''}: ${message}`);
     },
+    getNickname: () => nicknameRef.current,
   });
 
   useEffect(() => {
