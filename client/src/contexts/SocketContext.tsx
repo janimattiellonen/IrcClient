@@ -7,7 +7,7 @@ import {
   type SocketContextType,
   type TimestampedEvent,
 } from './SocketContextDefinition';
-import { useIrcChannelContext } from '../hooks/useIrcChannelContext.ts';
+import { useIrcConversationContext } from '../hooks/useIrcConversationContext.ts';
 import { useIrcSessionContext } from '../hooks/useIrcSessionContext.ts';
 import { useMessageRouter } from '../hooks/useMessageRouter.ts';
 
@@ -19,7 +19,7 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [responses, setResponses] = useState<TimestampedEvent[]>([]);
-  const { addChannel } = useIrcChannelContext();
+  const { addConversation } = useIrcConversationContext();
   const { nickname } = useIrcSessionContext();
   const nicknameRef = { current: nickname };
   nicknameRef.current = nickname;
@@ -42,7 +42,8 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
 
     socketInstance.on('connect', () => {
       setIsConnected(true);
-      addChannel({
+      addConversation({
+        kind: 'channel',
         name: 'Console',
         messages: [],
         users: [],
@@ -61,7 +62,7 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
       detachRouter();
       socketInstance.close();
     };
-  }, [addChannel, attachToSocket]);
+  }, [addConversation, attachToSocket]);
 
   const connect = useCallback(() => {
     if (socket && !isConnected) {

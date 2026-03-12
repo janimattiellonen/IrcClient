@@ -1,5 +1,5 @@
 import './UserBar.css';
-import type { User } from '../../utils/ChannelManager.ts';
+import type { User } from '../../utils/ConversationManager.ts';
 import { UserContextMenu, type UserAction } from './UserContextMenu.tsx';
 
 type UserBarProps = {

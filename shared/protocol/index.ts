@@ -5,6 +5,7 @@ export {
   MESSAGE_JOIN_CHANNEL,
   MESSAGE_SEND_MESSAGE,
   MESSAGE_PART_CHANNEL,
+  MESSAGE_SEND_PRIVATE_MESSAGE,
 } from './clientMessages';
 export type {
   ClientMessage,
@@ -12,6 +13,7 @@ export type {
   JoinChannelPayload,
   SendMessagePayload,
   PartChannelPayload,
+  SendPrivateMessagePayload,
 } from './clientMessages';
 
 export {
@@ -22,6 +24,7 @@ export {
   SERVER_MESSAGE_CHANNEL_TOPIC,
   SERVER_MESSAGE_GENERIC_MESSAGE,
   SERVER_MESSAGE_ERROR,
+  SERVER_MESSAGE_PRIVATE_MESSAGE,
 } from './serverEvents';
 export type {
   ServerEvent,
@@ -33,4 +36,5 @@ export type {
   ChannelTopicPayload,
   GenericServerMessagePayload,
   ErrorPayload,
+  PrivateMessagePayload,
 } from './serverEvents';

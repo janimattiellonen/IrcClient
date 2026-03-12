@@ -7,6 +7,7 @@ export const SERVER_MESSAGE_GENERIC_MESSAGE = 'SERVER_MESSAGE_GENERIC_MESSAGE' a
 export const SERVER_MESSAGE_CHANNEL_USER_PART = 'SERVER_MESSAGE_CHANNEL_USER_PART' as const;
 export const SERVER_MESSAGE_CHANNEL_TOPIC = 'SERVER_MESSAGE_CHANNEL_TOPIC' as const;
 export const SERVER_MESSAGE_ERROR = 'SERVER_MESSAGE_ERROR' as const;
+export const SERVER_MESSAGE_PRIVATE_MESSAGE = 'SERVER_MESSAGE_PRIVATE_MESSAGE' as const;
 
 export type ServerMessagePayload = {
   host: string;
@@ -50,6 +51,12 @@ export type ErrorPayload = {
   message: string;
 };
 
+export type PrivateMessagePayload = {
+  sender: User;
+  recipient: string;
+  message: string;
+};
+
 export type ServerEventRegistry = {
   [SERVER_MESSAGE_CHANNEL_USER_LIST]: ChannelUserListPayload;
   [SERVER_MESSAGE_CHANNEL_USER_JOIN]: ChannelUserJoinPayload;
@@ -58,6 +65,7 @@ export type ServerEventRegistry = {
   [SERVER_MESSAGE_CHANNEL_TOPIC]: ChannelTopicPayload;
   [SERVER_MESSAGE_GENERIC_MESSAGE]: GenericServerMessagePayload;
   [SERVER_MESSAGE_ERROR]: ErrorPayload;
+  [SERVER_MESSAGE_PRIVATE_MESSAGE]: PrivateMessagePayload;
 };
 
 export type ServerEvent = {

@@ -1,12 +1,12 @@
 import './IrcView.css';
 import { useCallback } from 'react';
 import { Input } from '../components/Input.tsx';
-import { ChannelBar } from '../components/channels/ChannelBar.tsx';
+import { ConversationBar } from '../components/channels/ConversationBar.tsx';
 import { UserBar } from '../components/users/UserBar.tsx';
 import type { UserAction } from '../components/users/UserContextMenu.tsx';
-import { useIrcChannelContext } from '../hooks/useIrcChannelContext.ts';
+import { useIrcConversationContext } from '../hooks/useIrcConversationContext.ts';
 import type { TimestampedEvent } from '../contexts/SocketContextDefinition.ts';
-import type { ChannelMessage, User } from '../utils/ChannelManager.ts';
+import { isChannel, type ConversationMessage, type User } from '../utils/ConversationManager.ts';
 import { formatTimestamp } from '../utils/formatTimestamp.ts';
 
 type IrcViewProps = {
@@ -22,7 +22,7 @@ function renderGenericMessage({ event, timestamp }: TimestampedEvent) {
   return null;
 }
 
-function renderChannelMessage(message: ChannelMessage) {
+function renderConversationMessage(message: ConversationMessage) {
   return (
     <span>
       {formatTimestamp(message.timestamp)} <strong>{message.source}</strong>: {message.message}
@@ -31,24 +31,40 @@ function renderChannelMessage(message: ChannelMessage) {
 }
 
 export function IrcView({ handleInput, messages }: IrcViewProps) {
-  const { activeChannel } = useIrcChannelContext();
+  const { activeConversation, addConversation, setActiveConversation, getConversation } = useIrcConversationContext();
 
-  const isConsole = !activeChannel || activeChannel.name === 'Console';
+  const isConsole = !activeConversation || activeConversation.name === 'Console';
+  const showUserBar = activeConversation && isChannel(activeConversation) && !isConsole;
+  const showTopic = activeConversation && isChannel(activeConversation) && !isConsole && activeConversation.topic;
 
   const handleUserAction = useCallback((action: UserAction, user: User) => {
+    if (action === 'private_message') {
+      const existing = getConversation(user.nick);
+
+      if (!existing) {
+        addConversation({
+          kind: 'private',
+          name: user.nick,
+          messages: [],
+        });
+      }
+
+      setActiveConversation(user.nick);
+      return;
+    }
+
     console.log(`User action: ${action} on ${user.nick}`);
-    // TODO: wire up to IRC commands once protocol support is added
-  }, []);
+  }, [addConversation, setActiveConversation, getConversation]);
 
   return (
     <div className={'irc-view'}>
       <div className={'irc-view-channel-bar'}>
-        <ChannelBar />
+        <ConversationBar />
       </div>
 
       <div className={'irc-view-content'}>
-        {!isConsole && activeChannel.topic && (
-          <div className={'irc-view-topic'}>{activeChannel.topic}</div>
+        {showTopic && (
+          <div className={'irc-view-topic'}>{activeConversation.topic}</div>
         )}
 
         <div className={'irc-view-main'}>
@@ -57,12 +73,12 @@ export function IrcView({ handleInput, messages }: IrcViewProps) {
               ? messages.map((message, i) => (
                   <p key={i}>{renderGenericMessage(message)}</p>
                 ))
-              : activeChannel.messages.map((message) => (
-                  <p key={message.id}>{renderChannelMessage(message)}</p>
+              : activeConversation.messages.map((message) => (
+                  <p key={message.id}>{renderConversationMessage(message)}</p>
                 ))}
           </div>
 
-          {!isConsole && <UserBar users={activeChannel.users} onUserAction={handleUserAction} />}
+          {showUserBar && <UserBar users={activeConversation.users} onUserAction={handleUserAction} />}
         </div>
 
         <div className={'irc-view-input'}>

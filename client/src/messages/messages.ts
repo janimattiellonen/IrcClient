@@ -4,10 +4,12 @@ import {
   type Message,
   type PartChannelPayload,
   type SendMessagePayload,
+  type SendPrivateMessagePayload,
   MESSAGE_JOIN_CHANNEL,
   MESSAGE_LOGIN,
   MESSAGE_PART_CHANNEL,
   MESSAGE_SEND_MESSAGE,
+  MESSAGE_SEND_PRIVATE_MESSAGE,
 } from '../../../shared/protocol';
 
 export function loginMessage(
@@ -46,5 +48,15 @@ export function sendMessageMessage(
   return {
     type: MESSAGE_SEND_MESSAGE,
     payload: { channel, message },
+  };
+}
+
+export function sendPrivateMessageMessage(
+  recipient: string,
+  message: string
+): Message<typeof MESSAGE_SEND_PRIVATE_MESSAGE, SendPrivateMessagePayload> {
+  return {
+    type: MESSAGE_SEND_PRIVATE_MESSAGE,
+    payload: { recipient, message },
   };
 }

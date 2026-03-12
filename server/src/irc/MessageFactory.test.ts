@@ -100,7 +100,28 @@ describe('toServerEvent', () => {
     });
   });
 
-  it('should return null for PART (not yet implemented)', () => {
+  it('should convert a user PRIVMSG to a private message event when target is not a channel', () => {
+    const parsed: ParsedUserMessage = {
+      kind: 'user',
+      user: { nick: 'Guest67', user: '~u', host: 'epmw7nfq4pm9w.irc' },
+      command: 'PRIVMSG',
+      params: ['jme'],
+      trailing: 'Hello privately!',
+    };
+
+    const result = toServerEvent(parsed, ':Guest67!~u@epmw7nfq4pm9w.irc PRIVMSG jme :Hello privately!');
+
+    expect(result).toEqual({
+      type: 'SERVER_MESSAGE_PRIVATE_MESSAGE',
+      payload: {
+        sender: { nick: 'Guest67', user: '~u', host: 'epmw7nfq4pm9w.irc' },
+        recipient: 'jme',
+        message: 'Hello privately!',
+      },
+    });
+  });
+
+  it('should convert a user PART to channel user part event', () => {
     const parsed: ParsedUserMessage = {
       kind: 'user',
       user: { nick: 'jme', user: '~u', host: 'epmw7nfq4pm9w.irc' },
@@ -109,6 +130,12 @@ describe('toServerEvent', () => {
       trailing: '',
     };
 
-    expect(toServerEvent(parsed, ':jme!~u@epmw7nfq4pm9w.irc PART #foo3')).toBeNull();
+    expect(toServerEvent(parsed, ':jme!~u@epmw7nfq4pm9w.irc PART #foo3')).toEqual({
+      type: 'SERVER_MESSAGE_CHANNEL_USER_PART',
+      payload: {
+        channel: '#foo3',
+        user: { nick: 'jme', user: '~u', host: 'epmw7nfq4pm9w.irc' },
+      },
+    });
   });
 });

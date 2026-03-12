@@ -1,10 +1,10 @@
-import { type ClientMessage, MESSAGE_JOIN_CHANNEL, MESSAGE_LOGIN, MESSAGE_PART_CHANNEL, MESSAGE_SEND_MESSAGE } from 'shared/protocol';
+import { type ClientMessage, MESSAGE_JOIN_CHANNEL, MESSAGE_LOGIN, MESSAGE_PART_CHANNEL, MESSAGE_SEND_MESSAGE, MESSAGE_SEND_PRIVATE_MESSAGE } from 'shared/protocol';
 
 import { connect } from './client';
 import { Socket } from 'socket.io';
 
 import { IrcConnectionManager } from './IrcConnectionManager';
-import { serverChannelUserMessage } from '../messages/serverMessages';
+import { serverChannelUserMessage, serverPrivateMessage } from '../messages/serverMessages';
 
 let connectionManager: IrcConnectionManager;
 
@@ -42,6 +42,23 @@ export function handleClientMessage(message: ClientMessage, socket: Socket) {
           user: connection.nickname,
           host: '',
         },
+        message: message.payload.message,
+      }));
+    }
+  } else if (message.type === MESSAGE_SEND_PRIVATE_MESSAGE) {
+    const connection = connectionManager.getConnection(socket.id);
+
+    if (connection) {
+      connection.connection.sendMessage(message.payload.recipient, message.payload.message);
+
+      // Echo the PM back to the sender
+      socket.emit('message_response', serverPrivateMessage({
+        sender: {
+          nick: connection.nickname,
+          user: connection.nickname,
+          host: '',
+        },
+        recipient: message.payload.recipient,
         message: message.payload.message,
       }));
     }

@@ -1,4 +1,4 @@
-.channel {
+.conversation {
   display: flex;
   align-items: center;
   position: relative;
@@ -11,38 +11,38 @@
   transition: background-color 0.15s, color 0.15s, border-color 0.15s;
 }
 
-.channel .name {
+.conversation .name {
   flex: 1;
   text-align: center;
 }
 
-.channel.active {
+.conversation.active {
   color: var(--accent-primary);
   background: var(--bg-light);
   border-color: var(--accent-primary);
 }
 
-.channel:hover {
+.conversation:hover {
   background: var(--bg-elevated);
   color: var(--text-bright);
   border-color: var(--border-default);
 }
 
-.channel.active:hover {
+.conversation.active:hover {
   color: var(--accent-primary);
 }
 
-.channel.unread {
+.conversation.unread {
   font-weight: bold;
   color: var(--accent-warning);
   border-color: var(--accent-warning);
 }
 
-.channel.unread:hover {
+.conversation.unread:hover {
   color: var(--accent-warning);
 }
 
-.channel-indicators {
+.conversation-indicators {
   position: absolute;
   right: 6px;
   display: flex;
@@ -58,7 +58,7 @@
   flex-shrink: 0;
 }
 
-.channel-close {
+.conversation-close {
   font-size: 14px;
   line-height: 1;
   opacity: 0;
@@ -68,11 +68,11 @@
   transition: opacity 0.15s;
 }
 
-.channel:hover .channel-close {
+.conversation:hover .conversation-close {
   opacity: 0.6;
 }
 
-.channel-close:hover {
+.conversation-close:hover {
   opacity: 1 !important;
   color: var(--accent-error);
 }

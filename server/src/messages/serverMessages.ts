@@ -7,6 +7,7 @@ import {
   type ErrorPayload,
   type GenericServerMessagePayload,
   type Message,
+  type PrivateMessagePayload,
   SERVER_MESSAGE_CHANNEL_TOPIC,
   SERVER_MESSAGE_CHANNEL_USER_JOIN,
   SERVER_MESSAGE_CHANNEL_USER_LIST,
@@ -14,6 +15,7 @@ import {
   SERVER_MESSAGE_CHANNEL_USER_PART,
   SERVER_MESSAGE_ERROR,
   SERVER_MESSAGE_GENERIC_MESSAGE,
+  SERVER_MESSAGE_PRIVATE_MESSAGE,
 } from 'shared/protocol';
 
 type ServerChannelUserListProps = {
@@ -166,6 +168,29 @@ export function serverError(
     type: SERVER_MESSAGE_ERROR,
     payload: {
       code: params.code,
+      message: params.message,
+    },
+  };
+}
+
+type ServerPrivateMessageProps = {
+  sender: {
+    nick: string;
+    user: string;
+    host: string;
+  };
+  recipient: string;
+  message: string;
+};
+
+export function serverPrivateMessage(
+  params: ServerPrivateMessageProps,
+): Message<typeof SERVER_MESSAGE_PRIVATE_MESSAGE, PrivateMessagePayload> {
+  return {
+    type: SERVER_MESSAGE_PRIVATE_MESSAGE,
+    payload: {
+      sender: params.sender,
+      recipient: params.recipient,
       message: params.message,
     },
   };

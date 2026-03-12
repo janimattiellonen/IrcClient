@@ -1,6 +1,6 @@
 import * as ContextMenu from '@radix-ui/react-context-menu';
 import './UserContextMenu.css';
-import type { User } from '../../utils/ChannelManager.ts';
+import type { User } from '../../utils/ConversationManager.ts';
 
 export type UserAction = 'private_message' | 'kick' | 'give_op' | 'remove_op';
 

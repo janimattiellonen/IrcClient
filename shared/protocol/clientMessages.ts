@@ -4,6 +4,7 @@ export const MESSAGE_LOGIN = 'LOGIN' as const;
 export const MESSAGE_JOIN_CHANNEL = 'JOIN_CHANNEL' as const;
 export const MESSAGE_SEND_MESSAGE = 'SEND_MESSAGE' as const;
 export const MESSAGE_PART_CHANNEL = 'PART_CHANNEL' as const;
+export const MESSAGE_SEND_PRIVATE_MESSAGE = 'SEND_PRIVATE_MESSAGE' as const;
 
 export type LoginPayload = {
   nickname: string;
@@ -24,11 +25,17 @@ export type PartChannelPayload = {
   channel: string;
 };
 
+export type SendPrivateMessagePayload = {
+  recipient: string;
+  message: string;
+};
+
 export type ClientMessageRegistry = {
   [MESSAGE_LOGIN]: LoginPayload;
   [MESSAGE_JOIN_CHANNEL]: JoinChannelPayload;
   [MESSAGE_SEND_MESSAGE]: SendMessagePayload;
   [MESSAGE_PART_CHANNEL]: PartChannelPayload;
+  [MESSAGE_SEND_PRIVATE_MESSAGE]: SendPrivateMessagePayload;
 };
 
 export type ClientMessage = {

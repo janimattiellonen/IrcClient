@@ -9,8 +9,9 @@ import {
   SERVER_MESSAGE_CHANNEL_USER_PART,
   SERVER_MESSAGE_ERROR,
   SERVER_MESSAGE_GENERIC_MESSAGE,
+  SERVER_MESSAGE_PRIVATE_MESSAGE,
 } from '../../../shared/protocol';
-import { useIrcChannelContext } from './useIrcChannelContext';
+import { useIrcConversationContext } from './useIrcConversationContext';
 
 type MessageRouterCallbacks = {
   onGenericMessage: (event: ServerEvent) => void;
@@ -23,26 +24,25 @@ type MessageRouterCallbacks = {
  * Uses refs to avoid stale closure issues in socket event listeners.
  */
 export function useMessageRouter(callbacks: MessageRouterCallbacks) {
-  const { addChannel, addUserToChannel, setChannelUsers, getChannel, addMessageToChannel, setChannelTopic, removeChannel, removeUserFromChannel } = useIrcChannelContext();
+  const { addConversation, addUserToChannel, setChannelUsers, getConversation, addMessage, setChannelTopic, removeConversation, removeUserFromChannel } = useIrcConversationContext();
 
-  // Use refs to avoid stale closures in the socket event listener
-  const addChannelRef = useRef(addChannel);
+  const addConversationRef = useRef(addConversation);
   const addUserToChannelRef = useRef(addUserToChannel);
   const setChannelUsersRef = useRef(setChannelUsers);
-  const getChannelRef = useRef(getChannel);
-  const addMessageToChannelRef = useRef(addMessageToChannel);
+  const getConversationRef = useRef(getConversation);
+  const addMessageRef = useRef(addMessage);
   const setChannelTopicRef = useRef(setChannelTopic);
-  const removeChannelRef = useRef(removeChannel);
+  const removeConversationRef = useRef(removeConversation);
   const removeUserFromChannelRef = useRef(removeUserFromChannel);
   const callbacksRef = useRef(callbacks);
 
-  addChannelRef.current = addChannel;
+  addConversationRef.current = addConversation;
   addUserToChannelRef.current = addUserToChannel;
   setChannelUsersRef.current = setChannelUsers;
-  getChannelRef.current = getChannel;
-  addMessageToChannelRef.current = addMessageToChannel;
+  getConversationRef.current = getConversation;
+  addMessageRef.current = addMessage;
   setChannelTopicRef.current = setChannelTopic;
-  removeChannelRef.current = removeChannel;
+  removeConversationRef.current = removeConversation;
   removeUserFromChannelRef.current = removeUserFromChannel;
   callbacksRef.current = callbacks;
 
@@ -54,10 +54,11 @@ export function useMessageRouter(callbacks: MessageRouterCallbacks) {
       }
 
       case SERVER_MESSAGE_CHANNEL_USER_LIST: {
-        const channel = getChannelRef.current(data.payload.channel);
+        const conversation = getConversationRef.current(data.payload.channel);
 
-        if (!channel) {
-          addChannelRef.current({
+        if (!conversation) {
+          addConversationRef.current({
+            kind: 'channel',
             name: data.payload.channel,
             messages: [],
             users: [],
@@ -69,10 +70,11 @@ export function useMessageRouter(callbacks: MessageRouterCallbacks) {
       }
 
       case SERVER_MESSAGE_CHANNEL_USER_JOIN: {
-        const channel = getChannelRef.current(data.payload.channel);
+        const conversation = getConversationRef.current(data.payload.channel);
 
-        if (!channel) {
-          addChannelRef.current({
+        if (!conversation) {
+          addConversationRef.current({
+            kind: 'channel',
             name: data.payload.channel,
             messages: [],
             users: [],
@@ -87,10 +89,10 @@ export function useMessageRouter(callbacks: MessageRouterCallbacks) {
         setChannelTopicRef.current(data.payload.topic, data.payload.channel);
 
         if (data.payload.changedBy) {
-          addMessageToChannelRef.current({
+          addMessageRef.current({
             id: crypto.randomUUID(),
             timestamp: new Date(),
-            channelName: data.payload.channel,
+            conversationName: data.payload.channel,
             source: '',
             message: `${data.payload.changedBy} changed the topic to: ${data.payload.topic}`,
           }, data.payload.channel);
@@ -99,10 +101,10 @@ export function useMessageRouter(callbacks: MessageRouterCallbacks) {
       }
 
       case SERVER_MESSAGE_CHANNEL_USER_MESSAGE: {
-        addMessageToChannelRef.current({
+        addMessageRef.current({
           id: crypto.randomUUID(),
           timestamp: new Date(),
-          channelName: data.payload.channel,
+          conversationName: data.payload.channel,
           source: data.payload.user.nick,
           message: data.payload.message,
         }, data.payload.channel);
@@ -114,10 +116,37 @@ export function useMessageRouter(callbacks: MessageRouterCallbacks) {
         const channel = data.payload.channel;
 
         if (nick === callbacksRef.current.getNickname()) {
-          removeChannelRef.current(channel);
+          removeConversationRef.current(channel);
         } else {
           removeUserFromChannelRef.current(nick, channel);
         }
+        break;
+      }
+
+      case SERVER_MESSAGE_PRIVATE_MESSAGE: {
+        const myNick = callbacksRef.current.getNickname();
+        // If we sent it (echo), the conversation name is the recipient; otherwise it's the sender
+        const conversationName = data.payload.sender.nick === myNick
+          ? data.payload.recipient
+          : data.payload.sender.nick;
+
+        const existing = getConversationRef.current(conversationName);
+
+        if (!existing) {
+          addConversationRef.current({
+            kind: 'private',
+            name: conversationName,
+            messages: [],
+          });
+        }
+
+        addMessageRef.current({
+          id: crypto.randomUUID(),
+          timestamp: new Date(),
+          conversationName,
+          source: data.payload.sender.nick,
+          message: data.payload.message,
+        }, conversationName);
         break;
       }
 

@@ -8,6 +8,7 @@ import {
   serverChannelTopic,
   genericServerMessage,
   serverError,
+  serverPrivateMessage,
 } from '../messages/serverMessages';
 import { IrcProtocol } from './IrcProtocol';
 
@@ -59,7 +60,17 @@ export function toServerEvent(parsed: ParsedIrcMessage, raw: string): ServerEven
         }
         case 'PRIVMSG': {
           const result = IrcProtocol.parseChannelMessage(raw);
-          return result ? serverChannelUserMessage(result) : null;
+          if (!result) return null;
+
+          if (result.channel.startsWith('#')) {
+            return serverChannelUserMessage(result);
+          }
+
+          return serverPrivateMessage({
+            sender: result.user,
+            recipient: result.channel,
+            message: result.message,
+          });
         }
         case 'TOPIC': {
           const channel = parsed.params[0];

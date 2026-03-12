@@ -22,7 +22,7 @@ export function parseIrcCommand(rawInput: string): IrcCommand | InvalidCommand {
     return parsePart(input);
   }
 
-  if (input.toUpperCase().startsWith('/PRIVMSG')) {
+  if (input.toUpperCase().startsWith('/PRIVMSG') || input.toUpperCase().startsWith('/MSG')) {
     return parsePrivMsg(input);
   }
 
@@ -37,10 +37,25 @@ function parsePart(input: string): IrcCommand | InvalidCommand {
 }
 
 function parsePrivMsg(input: string): IrcCommand | InvalidCommand {
-  // TODO: Implement proper PRIVMSG parsing
-  // For now, returning placeholder values
-  const recipient = 'doo';
-  const message = 'foo';
+  // /msg <nick> <message> or /privmsg <nick> <message>
+  const spaceIndex = input.indexOf(' ');
+  if (spaceIndex === -1) {
+    return invalidCommand(input);
+  }
+
+  const rest = input.substring(spaceIndex + 1).trim();
+  const recipientEnd = rest.indexOf(' ');
+
+  if (recipientEnd === -1) {
+    return invalidCommand(input);
+  }
+
+  const recipient = rest.substring(0, recipientEnd);
+  const message = rest.substring(recipientEnd + 1).trim();
+
+  if (!recipient || !message) {
+    return invalidCommand(input);
+  }
 
   return privMsgCommand(recipient, message, input);
 }

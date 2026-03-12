@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router';
 import { SocketProvider } from './contexts/SocketContext';
 import { IrcSessionProvider } from './contexts/IrcSessionContext';
-import { IrcChannelProvider } from './contexts/IrcChannelContext.tsx';
+import { IrcConversationProvider } from './contexts/IrcConversationContext.tsx';
 import './index.css';
 import App from './App.tsx';
 
@@ -11,11 +11,11 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
       <IrcSessionProvider>
-        <IrcChannelProvider>
+        <IrcConversationProvider>
           <SocketProvider>
             <App />
           </SocketProvider>
-        </IrcChannelProvider>
+        </IrcConversationProvider>
       </IrcSessionProvider>
     </BrowserRouter>
   </StrictMode>
