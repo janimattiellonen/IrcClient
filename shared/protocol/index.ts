@@ -25,11 +25,13 @@ export {
   SERVER_MESSAGE_GENERIC_MESSAGE,
   SERVER_MESSAGE_ERROR,
   SERVER_MESSAGE_PRIVATE_MESSAGE,
+  SERVER_MESSAGE_NICK_CHANGE,
 } from './serverEvents';
 export type {
   ServerEvent,
   ServerMessagePayload,
   ChannelUserListPayload,
+  ChannelUserListEntry,
   ChannelUserJoinPayload,
   ChannelUserPartPayload,
   ChannelUserMessagePayload,
@@ -37,4 +39,5 @@ export type {
   GenericServerMessagePayload,
   ErrorPayload,
   PrivateMessagePayload,
+  NickChangePayload,
 } from './serverEvents';

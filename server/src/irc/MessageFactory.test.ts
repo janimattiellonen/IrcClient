@@ -54,7 +54,10 @@ describe('toServerEvent', () => {
         replyCode: '353',
         channelType: '=',
         channel: '#foo',
-        nicks: ['Guest67', 'jme'],
+        nicks: [
+          { nick: 'Guest67', prefix: '' },
+          { nick: 'jme', prefix: '' },
+        ],
       },
     });
   });
@@ -117,6 +120,42 @@ describe('toServerEvent', () => {
         sender: { nick: 'Guest67', user: '~u', host: 'epmw7nfq4pm9w.irc' },
         recipient: 'jme',
         message: 'Hello privately!',
+      },
+    });
+  });
+
+  it('should convert a user NICK to nick change event', () => {
+    const parsed: ParsedUserMessage = {
+      kind: 'user',
+      user: { nick: 'oldnick', user: '~u', host: 'epmw7nfq4pm9w.irc' },
+      command: 'NICK',
+      params: ['newnick'],
+      trailing: '',
+    };
+
+    expect(toServerEvent(parsed, ':oldnick!~u@epmw7nfq4pm9w.irc NICK newnick')).toEqual({
+      type: 'SERVER_MESSAGE_NICK_CHANGE',
+      payload: {
+        oldNick: 'oldnick',
+        newNick: 'newnick',
+      },
+    });
+  });
+
+  it('should convert a user NICK with trailing to nick change event', () => {
+    const parsed: ParsedUserMessage = {
+      kind: 'user',
+      user: { nick: 'oldnick', user: '~u', host: 'epmw7nfq4pm9w.irc' },
+      command: 'NICK',
+      params: [],
+      trailing: 'newnick',
+    };
+
+    expect(toServerEvent(parsed, ':oldnick!~u@epmw7nfq4pm9w.irc NICK :newnick')).toEqual({
+      type: 'SERVER_MESSAGE_NICK_CHANGE',
+      payload: {
+        oldNick: 'oldnick',
+        newNick: 'newnick',
       },
     });
   });

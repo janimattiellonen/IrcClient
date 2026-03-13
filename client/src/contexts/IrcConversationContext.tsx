@@ -46,11 +46,11 @@ export function IrcConversationProvider({ children }: IrcConversationProviderPro
   );
 
   const setChannelUsers = useCallback(
-    (nicks: string[], channelName: string) => {
+    (nicks: { nick: string; prefix: string }[], channelName: string) => {
       const conversation = conversationManager.getConversation(channelName);
 
       if (conversation && isChannel(conversation)) {
-        conversation.users = nicks.map((nick) => ({ nick, user: '', host: '' }));
+        conversation.users = nicks.map(({ nick, prefix }) => ({ nick, prefix, user: '', host: '' }));
         setConversations([...conversationManager.getConversations()]);
 
         const active = conversationManager.getActiveConversation();
@@ -115,6 +115,19 @@ export function IrcConversationProvider({ children }: IrcConversationProviderPro
     [conversationManager]
   );
 
+  const renameUser = useCallback(
+    (oldNick: string, newNick: string) => {
+      conversationManager.renameUser(oldNick, newNick);
+      setConversations([...conversationManager.getConversations()]);
+
+      const active = conversationManager.getActiveConversation();
+      if (active) {
+        setActiveConversationState({ ...active });
+      }
+    },
+    [conversationManager]
+  );
+
   const removeConversation = useCallback(
     (name: string) => {
       conversationManager.removeConversation(name);
@@ -158,6 +171,7 @@ export function IrcConversationProvider({ children }: IrcConversationProviderPro
     addMessage,
     setChannelTopic,
     removeUserFromChannel,
+    renameUser,
   };
 
   return <IrcConversationContext.Provider value={value}>{children}</IrcConversationContext.Provider>;

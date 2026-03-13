@@ -8,6 +8,7 @@ export type ConversationMessage = {
 
 export type User = {
   nick: string;
+  prefix: string;
   user: string;
   host: string;
 }
@@ -82,6 +83,26 @@ export class ConversationManager {
 
   getConversations(): Conversation[] {
     return Object.values(this.conversations);
+  }
+
+  renameUser(oldNick: string, newNick: string): void {
+    // Update user lists in all channels
+    for (const conversation of Object.values(this.conversations)) {
+      if (conversation.kind === 'channel') {
+        const user = conversation.users.find((u) => u.nick === oldNick);
+        if (user) {
+          user.nick = newNick;
+        }
+      }
+    }
+
+    // Rename PM conversation if one exists with the old nick
+    const pmConversation = this.conversations[oldNick];
+    if (pmConversation && pmConversation.kind === 'private') {
+      delete this.conversations[oldNick];
+      pmConversation.name = newNick;
+      this.conversations[newNick] = pmConversation;
+    }
   }
 
   removeConversation(name: string): void {

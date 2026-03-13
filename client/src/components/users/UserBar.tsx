@@ -14,7 +14,7 @@ export function UserBar({ users, onUserAction }: UserBarProps) {
       {users.map((user) => (
         <UserContextMenu key={user.nick} user={user} onAction={onUserAction}>
           <div className={'user-bar-nick'}>
-            {user.nick}
+            {user.prefix}{user.nick}
           </div>
         </UserContextMenu>
       ))}

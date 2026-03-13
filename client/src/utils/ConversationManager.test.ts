@@ -164,4 +164,53 @@ describe('ConversationManager', () => {
       'Conversation #foos does not exist'
     );
   });
+
+  it('renames a user in channel user lists', () => {
+    manager['conversations'] = {
+      '#foo': {
+        kind: 'channel',
+        name: '#foo',
+        messages: [],
+        users: [
+          { nick: 'oldnick', prefix: '@', user: '~u', host: 'test.host' },
+          { nick: 'other', prefix: '', user: '~u', host: 'test.host' },
+        ],
+      },
+      '#bar': {
+        kind: 'channel',
+        name: '#bar',
+        messages: [],
+        users: [
+          { nick: 'oldnick', prefix: '', user: '~u', host: 'test.host' },
+        ],
+      },
+    };
+
+    manager.renameUser('oldnick', 'newnick');
+
+    const foo = manager.getConversation('#foo');
+    const bar = manager.getConversation('#bar');
+
+    expect(foo?.kind === 'channel' && foo.users[0].nick).toBe('newnick');
+    expect(foo?.kind === 'channel' && foo.users[1].nick).toBe('other');
+    expect(bar?.kind === 'channel' && bar.users[0].nick).toBe('newnick');
+  });
+
+  it('renames a private conversation', () => {
+    manager['conversations'] = {
+      'oldnick': {
+        kind: 'private',
+        name: 'oldnick',
+        messages: [{ id: '1', timestamp: new Date(), conversationName: 'oldnick', source: 'oldnick', message: 'hi' }],
+      },
+    };
+
+    manager.renameUser('oldnick', 'newnick');
+
+    expect(manager.getConversation('oldnick')).toBeNull();
+    const conv = manager.getConversation('newnick');
+    expect(conv).not.toBeNull();
+    expect(conv!.name).toBe('newnick');
+    expect(conv!.messages).toHaveLength(1);
+  });
 });

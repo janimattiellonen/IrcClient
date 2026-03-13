@@ -7,6 +7,7 @@ import {
   type ErrorPayload,
   type GenericServerMessagePayload,
   type Message,
+  type NickChangePayload,
   type PrivateMessagePayload,
   SERVER_MESSAGE_CHANNEL_TOPIC,
   SERVER_MESSAGE_CHANNEL_USER_JOIN,
@@ -16,13 +17,14 @@ import {
   SERVER_MESSAGE_ERROR,
   SERVER_MESSAGE_GENERIC_MESSAGE,
   SERVER_MESSAGE_PRIVATE_MESSAGE,
+  SERVER_MESSAGE_NICK_CHANGE,
 } from 'shared/protocol';
 
 type ServerChannelUserListProps = {
   channel: string;
   channelType: string;
   host: string;
-  nicks: string[];
+  nicks: { nick: string; prefix: string }[];
   replyCode: string;
 };
 
@@ -192,6 +194,23 @@ export function serverPrivateMessage(
       sender: params.sender,
       recipient: params.recipient,
       message: params.message,
+    },
+  };
+}
+
+type ServerNickChangeProps = {
+  oldNick: string;
+  newNick: string;
+};
+
+export function serverNickChange(
+  params: ServerNickChangeProps,
+): Message<typeof SERVER_MESSAGE_NICK_CHANGE, NickChangePayload> {
+  return {
+    type: SERVER_MESSAGE_NICK_CHANGE,
+    payload: {
+      oldNick: params.oldNick,
+      newNick: params.newNick,
     },
   };
 }

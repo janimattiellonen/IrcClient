@@ -10,6 +10,7 @@ import {
   SERVER_MESSAGE_ERROR,
   SERVER_MESSAGE_GENERIC_MESSAGE,
   SERVER_MESSAGE_PRIVATE_MESSAGE,
+  SERVER_MESSAGE_NICK_CHANGE,
 } from '../../../shared/protocol';
 import { useIrcConversationContext } from './useIrcConversationContext';
 
@@ -24,7 +25,7 @@ type MessageRouterCallbacks = {
  * Uses refs to avoid stale closure issues in socket event listeners.
  */
 export function useMessageRouter(callbacks: MessageRouterCallbacks) {
-  const { addConversation, addUserToChannel, setChannelUsers, getConversation, addMessage, setChannelTopic, removeConversation, removeUserFromChannel } = useIrcConversationContext();
+  const { addConversation, addUserToChannel, setChannelUsers, getConversation, addMessage, setChannelTopic, removeConversation, removeUserFromChannel, renameUser } = useIrcConversationContext();
 
   const addConversationRef = useRef(addConversation);
   const addUserToChannelRef = useRef(addUserToChannel);
@@ -34,6 +35,7 @@ export function useMessageRouter(callbacks: MessageRouterCallbacks) {
   const setChannelTopicRef = useRef(setChannelTopic);
   const removeConversationRef = useRef(removeConversation);
   const removeUserFromChannelRef = useRef(removeUserFromChannel);
+  const renameUserRef = useRef(renameUser);
   const callbacksRef = useRef(callbacks);
 
   addConversationRef.current = addConversation;
@@ -44,6 +46,7 @@ export function useMessageRouter(callbacks: MessageRouterCallbacks) {
   setChannelTopicRef.current = setChannelTopic;
   removeConversationRef.current = removeConversation;
   removeUserFromChannelRef.current = removeUserFromChannel;
+  renameUserRef.current = renameUser;
   callbacksRef.current = callbacks;
 
   const handleServerEvent = useCallback((data: ServerEvent) => {
@@ -81,7 +84,7 @@ export function useMessageRouter(callbacks: MessageRouterCallbacks) {
           });
         }
 
-        addUserToChannelRef.current(data.payload.user, data.payload.channel);
+        addUserToChannelRef.current({ ...data.payload.user, prefix: '' }, data.payload.channel);
         break;
       }
 
@@ -147,6 +150,11 @@ export function useMessageRouter(callbacks: MessageRouterCallbacks) {
           source: data.payload.sender.nick,
           message: data.payload.message,
         }, conversationName);
+        break;
+      }
+
+      case SERVER_MESSAGE_NICK_CHANGE: {
+        renameUserRef.current(data.payload.oldNick, data.payload.newNick);
         break;
       }
 

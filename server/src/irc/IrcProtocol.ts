@@ -235,7 +235,7 @@ export const IrcProtocol = {
     replyCode: string;
     channelType: string;
     channel: string;
-    nicks: string[];
+    nicks: { nick: string; prefix: string }[];
   } {
     // :ergo.test 353 jme = #foo :Guest67 jme
     const host = IrcProtocol.parseServerHost(message);
@@ -250,7 +250,12 @@ export const IrcProtocol = {
 
     // Extract nicks from trailing (after the last ':')
     const trailingStart = message.indexOf(':', 1);
-    const nicks = trailingStart !== -1 ? message.substring(trailingStart + 1).split(' ') : [];
+    const rawNicks = trailingStart !== -1 ? message.substring(trailingStart + 1).split(' ') : [];
+    // Separate IRC mode prefixes (@=op, +=voice, %=halfop, ~=owner, &=admin) from nicks
+    const nicks = rawNicks.map((raw) => {
+      const match = raw.match(/^([~&@%+]*)(.+)$/);
+      return match ? { nick: match[2], prefix: match[1] } : { nick: raw, prefix: '' };
+    });
 
     return {
       host,

@@ -8,16 +8,22 @@ export const SERVER_MESSAGE_CHANNEL_USER_PART = 'SERVER_MESSAGE_CHANNEL_USER_PAR
 export const SERVER_MESSAGE_CHANNEL_TOPIC = 'SERVER_MESSAGE_CHANNEL_TOPIC' as const;
 export const SERVER_MESSAGE_ERROR = 'SERVER_MESSAGE_ERROR' as const;
 export const SERVER_MESSAGE_PRIVATE_MESSAGE = 'SERVER_MESSAGE_PRIVATE_MESSAGE' as const;
+export const SERVER_MESSAGE_NICK_CHANGE = 'SERVER_MESSAGE_NICK_CHANGE' as const;
 
 export type ServerMessagePayload = {
   host: string;
   replyCode?: string | null;
 };
 
+export type ChannelUserListEntry = {
+  nick: string;
+  prefix: string;
+};
+
 export type ChannelUserListPayload = ServerMessagePayload & {
   channelType: string;
   channel: string;
-  nicks: string[];
+  nicks: ChannelUserListEntry[];
 };
 
 export type ChannelUserJoinPayload = {
@@ -57,6 +63,11 @@ export type PrivateMessagePayload = {
   message: string;
 };
 
+export type NickChangePayload = {
+  oldNick: string;
+  newNick: string;
+};
+
 export type ServerEventRegistry = {
   [SERVER_MESSAGE_CHANNEL_USER_LIST]: ChannelUserListPayload;
   [SERVER_MESSAGE_CHANNEL_USER_JOIN]: ChannelUserJoinPayload;
@@ -66,6 +77,7 @@ export type ServerEventRegistry = {
   [SERVER_MESSAGE_GENERIC_MESSAGE]: GenericServerMessagePayload;
   [SERVER_MESSAGE_ERROR]: ErrorPayload;
   [SERVER_MESSAGE_PRIVATE_MESSAGE]: PrivateMessagePayload;
+  [SERVER_MESSAGE_NICK_CHANGE]: NickChangePayload;
 };
 
 export type ServerEvent = {

@@ -9,6 +9,7 @@ import {
   genericServerMessage,
   serverError,
   serverPrivateMessage,
+  serverNickChange,
 } from '../messages/serverMessages';
 import { IrcProtocol } from './IrcProtocol';
 
@@ -80,6 +81,13 @@ export function toServerEvent(parsed: ParsedIrcMessage, raw: string): ServerEven
         case 'PART': {
           const channel = parsed.params[0];
           return serverChannelUserPart({ channel, user: parsed.user });
+        }
+        case 'NICK': {
+          const newNick = parsed.trailing || parsed.params[0];
+          return serverNickChange({
+            oldNick: parsed.user.nick,
+            newNick,
+          });
         }
         default:
           return null;

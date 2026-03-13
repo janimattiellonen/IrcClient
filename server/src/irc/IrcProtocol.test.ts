@@ -42,7 +42,20 @@ describe('parseChannelUserList', () => {
     expect(result.replyCode).toBe('353');
     expect(result.channelType).toBe('=');
     expect(result.channel).toBe('#foo');
-    expect(result.nicks).toEqual(['Guest67', 'jme']);
+    expect(result.nicks).toEqual([
+      { nick: 'Guest67', prefix: '' },
+      { nick: 'jme', prefix: '' },
+    ]);
+  });
+
+  it('should separate mode prefixes from nicks', () => {
+    const result = IrcProtocol.parseChannelUserList(':ergo.test 353 jme = #foo :@OpUser +VoiceUser NormalUser');
+
+    expect(result.nicks).toEqual([
+      { nick: 'OpUser', prefix: '@' },
+      { nick: 'VoiceUser', prefix: '+' },
+      { nick: 'NormalUser', prefix: '' },
+    ]);
   });
 });
 

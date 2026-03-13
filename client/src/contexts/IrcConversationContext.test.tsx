@@ -20,6 +20,7 @@ describe('IrcConversationContext', () => {
 
   const mockUser: User = {
     nick: 'testuser',
+    prefix: '',
     user: 'test',
     host: 'test.host.com',
   };
@@ -108,6 +109,7 @@ describe('IrcConversationContext', () => {
 
       const user2: User = {
         nick: 'testuser',
+        prefix: '',
         user: 'test2',
         host: 'different.host.com',
       };
